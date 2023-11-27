@@ -1,0 +1,31 @@
+#cloud-config
+
+users:
+  - name: admin
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCJW9trorqovP4H7X5Spubp1EZ0dKX9ejy8tT4yrP64Kl2ur4K7NF5PWSVp9PbWa+DVBNywfGdMrOVWUfvXe2LctCqYuXumLU7xK13nbbPlURh+iBj8CvzKi0cFR11yhwYmQQvwOX5QeYmGGcIAatooSIl+NFSPiWaGStlROnltywb83MNjGBYtcmgR+k1uhVN100+2wXFmkmBsS/D7b2qLKv1R38xY9rZhLztU24SCmo+2PWOvliG3krLxkgf7WHxGP0S/fdyoABd0JWmIHaRLcLVuHYdmo+/ZJdr/Bp3pg8zDoaN1O/+ijNYoBvfNdoIowt2UMDNDOG/mXVUuppyKLl8NC9OGg7Fr7k7ejJwBtHjHvv4pu5lK5V5i1XA9FQZ0xxYuWYZ0b4uFVsq54Ehglvy3JH6Rltn7sTn//uzANti8dtffPei0neGm3PgfrhwBJ0nAMkeYLC6ug2LMPCQbt+JMImNWZpDbStkJj0Zv2jFFihgnBTRPOIuYyPLxgC1scY7q/WK2eqfGzLe8WJK9kWO3SErsxW5Qc3SGo9yXtnuNXvBj8bYxd/KpS3z4P6QxPfpIw1rhANUJcYS/lbB04nqu+A8GSYW4rk7zKjrxFMXu9ovMFZp2uxqtWyMjkmbNPFPddU4bG0k838t5bHM2pB9nbVyINZWFPTK9zwRGlw== Daniel@GamePC
+    sudo:  ALL=(ALL) NOPASSWD:ALL
+
+package_update: true
+package_upgrade: true
+packages:
+  - qemu-guest-agent
+  - git
+  - figlet
+  - curl
+  - dnsutils
+  - rclone
+  - zip
+  - unzip
+runcmd:
+  - git clone https://github.com/realcryptonight/debian-install-scripts.git
+  - cd debian-install-scripts/
+  - chmod 755 setup-standard.sh
+  - ./setup-standard.sh
+  - echo 'directadmin_setup_license_key=""' >> config.cnf
+  - echo 'directadmin_setup_admin_username=""' >> config.cnf
+  - echo 'directadmin_setup_headless_email=""' >> config.cnf
+  - chmod 755 setup-directadmin.sh
+  - ./setup-directadmin.sh
+  - cd ../
+  - rm -rf debian-install-scripts/
