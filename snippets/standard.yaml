@@ -19,3 +19,5 @@ runcmd:
   - cd debian-install-scripts/
   - chmod 755 setup-standard.sh
   - ./setup-standard.sh
+  - cd ../
+  - rm -rf debian-install-scripts/
