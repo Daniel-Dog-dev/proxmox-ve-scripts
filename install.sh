@@ -11,4 +11,4 @@ mv create_templates.sh /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/create_templates.sh
 
 /custom-scripts/create_templates.sh
-echo "30 11    * * *   root    /custom-scripts/create_templates.sh" >> /etc/crontab
+echo "0 3    1 * *   root    /custom-scripts/create_templates.sh" >> /etc/crontab
