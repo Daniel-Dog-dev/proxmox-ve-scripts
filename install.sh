@@ -1,5 +1,11 @@
 #!/bin/bash
 
+git clone https://github.com/realcryptonight/debian-install-scripts.git
+cd debian-install-scripts/
+chmod 755 setup-standard.sh
+./setup-standard.sh
+cd ../
+
 serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
 #echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
 
