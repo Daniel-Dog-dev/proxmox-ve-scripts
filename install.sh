@@ -1,5 +1,14 @@
 #!/bin/bash
 
 serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
+#echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
 
-echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname"
+mv ./snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
+mv ./snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
+
+mkdir /custom-scripts/
+mv create_templates.sh /custom-scripts/create_templates.sh
+chmod 755 /custom-scripts/create_templates.sh
+
+/custom-scripts/create_templates.sh
+echo "30 11    * * *   root    /custom-scripts/create_templates.sh" >> /etc/crontab
