@@ -22,6 +22,10 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
+apt update
+apt -y upgrade
+apt install -y figlet
+
 git clone https://github.com/realcryptonight/debian-install-scripts.git
 cd debian-install-scripts/
 chmod 755 setup-standard.sh
