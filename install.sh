@@ -35,7 +35,7 @@ mv ./snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
 mv ./snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
 
 mkdir /custom-scripts/
-mv create_templates.sh /custom-scripts/create_templates.sh
+mv ./custom-scripts/create_templates.sh /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/create_templates.sh
 
 /custom-scripts/create_templates.sh

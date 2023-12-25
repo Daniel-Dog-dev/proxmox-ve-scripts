@@ -76,13 +76,13 @@ createTemplate() {
 
 userHelp()
 {
-   echo "Automaticly creating VM templates with the lastest OS versions."
+   echo "Automaticly create VM templates with the lastest OS versions."
    echo
    echo "Syntax: create_template.sh [-h|-v|-n|-s]"
    echo "options:"
    echo "-h	Print this help page."
    echo "-v	Print the script version."
-   echo "-n	Keep the 'old' templates and only add templates that have not been added."
+   echo "-n	Keep the 'old' templates. Only creates templates that do not exist."
    echo "-s	Specify the template storage name for the VM disks and Cloud-Init disks."
    echo "-f	Force template update even if there is no image change. (option -n gets ignored if provided.)"
    echo "-q	Run script quietly."
@@ -96,7 +96,7 @@ while getopts "hvns:fq" opt; do
 	  exit 0
 	  ;;
 	v)
-	  echo "Version: 0.1-dev3"
+	  echo "Version: 0.2-dev1"
 	  exit 0
 	  ;;
 	n)
