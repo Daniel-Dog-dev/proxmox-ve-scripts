@@ -24,23 +24,35 @@
 
 apt update
 apt -y upgrade
-apt install -y figlet
+apt install -y figlet vim
 
-git clone https://github.com/realcryptonight/debian-install-scripts.git
-cd debian-install-scripts/
-chmod 755 setup-standard.sh
-./setup-standard.sh
-cd ../
+rm /etc/motd
+mv ./files/00-header /etc/update-motd.d/
+mv ./files/10-sysinfo /etc/update-motd.d/
+mv ./files/10-uname /etc/update-motd.d/
+mv ./files/90-footer /etc/update-motd.d/
+chmod 777 /etc/update-motd.d/*
 
-serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
-echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
+sed -i 's/PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
+sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+service sshd restart
+
+#serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
+#echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
+
+pvesm set local --content snippets,iso,backup,vztmpl
+pvesm set local-lvm --content images,rootdir
 
 mv ./snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
 mv ./snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
 
 mkdir /custom-scripts/
 mv ./custom-scripts/create_templates.sh /custom-scripts/create_templates.sh
+mv ./custom-scripts/create_templates.sh /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
+chmod 755 /custom-scripts/backup_upload.sh
 
 /custom-scripts/create_templates.sh
-echo "0 3    1 * *   root    /custom-scripts/create_templates.sh" >> /etc/crontab
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh" >> /etc/crontab

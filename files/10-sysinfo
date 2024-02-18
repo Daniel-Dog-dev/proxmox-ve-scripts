@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+#    10-sysinfo - generate the system information
+#    Copyright (c) 2013 Nick Charlton
+#
+#    Authors: Nick Charlton <hello@nickcharlton.net>
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# 	 Modified by Daniel Markink
+
+red="\e[31m"
+default="\e[39m"
+white="\e[97m"
+green="\e[32m"
+
+ipv4=`hostname -I | awk '{print $1}'`
+ipv6=`hostname -I | awk '{print $2}'`
+
+date=`date`
+load=`cat /proc/loadavg | awk '{print $1}'`
+memory_usage=`free -m | awk '/Mem:/ { total=$2; used=$3 } END { printf("%3.1f%%", used/total*100)}'`
+
+uptime=`uptime | grep -ohe 'up .*' | sed 's/,/\ hours/g' | awk '{ printf $2" "$3 }'`
+processes=`ps aux | wc -l`
+
+root_usage=`df -h / | awk '/\// {print $(NF-1)}'`
+root_free_space=`df -h / | awk '/\// {print $(NF-4)}'`
+ 
+printf "${green}System information as of: ${white}$date \n"
+echo
+printf "${red}IPv4 Address${white}:${default}\t${ipv4}\t${red}IPv6 Address${white}:${default}\t${ipv6}\n"
+printf "${red}System Load${white}:${default}\t${load}\t\t${red}Memory Usage${white}:${default}\t${memory_usage}\n"
+printf "${red}Processes${white}:${default}\t${processes}\t\t${red}System Uptime${white}:${default}\t${uptime}\n"
+echo
+printf "${green}Disk information as of: ${white}$date \n"
+echo
+printf "${red}Usage On /${white}:${default}\t\t%s\t${red}Free On /${white}:${default}\t\t%s\n" $root_usage $root_free_space
+echo
