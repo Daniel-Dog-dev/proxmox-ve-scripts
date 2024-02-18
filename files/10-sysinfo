@@ -47,5 +47,5 @@ printf "%sProcesses%s:%s\t%s\t\t%sSystem Uptime%s:%s\t%s\n" "$red" "$white" "$de
 echo
 printf "%sDisk information as of: %s\n" "$date"
 echo
-printf "%sUsage On /%s:%s\t\t%s\t%sFree On /%s:%s\t\t%s\n" "$red" "$white" "$default" "$root_usage" "$red" "$white" "$default" "$root_free_space"
+printf "%bUsage On /%b:%b\t\t%s\t%bFree On /%b:%s\t\t%s\n" "$red" "$white" "$default" "$root_usage" "$red" "$white" "$default" "$root_free_space"
 echo
