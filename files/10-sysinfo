@@ -41,9 +41,9 @@ root_free_space=`df -h / | awk '/\// {print $(NF-4)}'`
  
 printf "${green}System information as of: ${white}$date \n"
 echo
-printf "${red}IPv4 Address${white}:${default}\t${ipv4}\t${red}IPv6 Address${white}:${default}\t${ipv6}\n"
-printf "${red}System Load${white}:${default}\t${load}\t\t${red}Memory Usage${white}:${default}\t${memory_usage}\n"
-printf "${red}Processes${white}:${default}\t${processes}\t\t${red}System Uptime${white}:${default}\t${uptime}\n"
+printf "${red}IPv4 Address${white}:${default}\t%s\t${red}IPv6 Address${white}:${default}\t%s\n" $ipv4 $ipv6
+printf "${red}System Load${white}:${default}\t%s\t\t${red}Memory Usage${white}:${default}\t%s\n" $load $memory_usage
+printf "${red}Processes${white}:${default}\t%s\t\t${red}System Uptime${white}:${default}\t%s\n" $processes $uptime
 echo
 printf "${green}Disk information as of: ${white}$date \n"
 echo
