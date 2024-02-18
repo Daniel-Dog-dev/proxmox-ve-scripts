@@ -39,13 +39,13 @@ processes=`ps aux | wc -l`
 root_usage=`df -h / | awk '/\// {print $(NF-1)}'`
 root_free_space=`df -h / | awk '/\// {print $(NF-4)}'`
  
-printf "System information as of: $date \n"
+printf "%sSystem information as of: %s\n" "$green" "$date"
 echo
-printf "IPv4 Address:\t%s\tIPv6 Address:\t%s\n" $ipv4 $ipv6
-printf "System Load:\t%s\t\tMemory Usage:\t%s\n" $load $memory_usage
-printf "Processes:\t%s\t\tSystem Uptime:\t%s\n" $processes $uptime
+printf "%sIPv4 Address%s:%s\t%s\t%sIPv6 Address%s:%s\t%s\n" "$red" "$white" "$default" "$ipv4" "$red" "$white" "$default" "$ipv6"
+printf "%sSystem Load%s:%s\t%s\t\t%sMemory Usage%s:%s\t%s\n" "$red" "$white" "$default" "$load" "$red" "$white" "$default" "$memory_usage"
+printf "%sProcesses%s:%s\t%s\t\t%sSystem Uptime%s:%s\t%s\n" "$red" "$white" "$default" "$processes" "$red" "$white" "$default" "$uptime"
 echo
-printf "Disk information as of: $date \n"
+printf "%sDisk information as of: %s\n" "$date"
 echo
-printf "Usage On /:\t\t%s\tFree On /:\t\t%s\n" $root_usage $root_free_space
+printf "%sUsage On /%s:%s\t\t%s\t%sFree On /%s:%s\t\t%s\n" "$red" "$white" "$default" "$root_usage" "$red" "$white" "$default" "$root_free_space"
 echo
