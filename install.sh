@@ -50,7 +50,7 @@ mv ./snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
 
 mkdir /custom-scripts/
 mv ./custom-scripts/create_templates.sh /custom-scripts/create_templates.sh
-mv ./custom-scripts/create_templates.sh /custom-scripts/backup_upload.sh
+mv ./custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
