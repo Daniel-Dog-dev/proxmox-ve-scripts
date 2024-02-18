@@ -31,7 +31,7 @@ ipv6=`hostname -I | awk '{print $2}'`
 
 date=`date`
 load=`cat /proc/loadavg | awk '{print $1}'`
-memory_usage=`free -m | awk '/Mem:/ { total=$2; used=$3 } END { printf("%3.1f%%", used/total*100)}'`
+memory_usage=`free -m | awk '/Mem/ { printf("%3.1f%%", $3/$2*100) }'`
 
 uptime=`uptime | grep -ohe 'up .*' | sed 's/,/\ hours/g' | awk '{ printf $2" "$3 }'`
 processes=`ps aux | wc -l`
