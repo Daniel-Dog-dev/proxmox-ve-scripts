@@ -45,6 +45,11 @@ service sshd restart
 pvesm set local --content snippets,iso,backup,vztmpl
 pvesm set local-lvm --content images,rootdir
 
+while [ ! -d "/var/lib/vz/snippets" ]; do
+	echo "No snippets dir yet. Waiting..."
+    sleep 1s
+done
+
 mv ./snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
 mv ./snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
 
