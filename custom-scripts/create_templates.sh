@@ -134,11 +134,11 @@ fi
 
 echo "" > /var/lock/vm-template-update.lck
 
-if [ ! -d "cache" ]; then
+if [ ! -d "$(dirname $0)/cache" ]; then
 	if [ $quiet == 0 ]; then
 		echo "No cache directory found. Creating cache directory."
 	fi
-	mkdir cache/
+	mkdir $(dirname $0)/cache/
 fi
 
 if [ -f "$(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then

@@ -47,7 +47,7 @@ pvesm set local-lvm --content images,rootdir
 
 while [ ! -d "/var/lib/vz/snippets" ]; do
 	echo "No snippets dir yet. Waiting..."
-    sleep 1s
+    sleep 5s
 done
 
 mv ./snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
