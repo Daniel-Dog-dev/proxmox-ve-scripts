@@ -36,9 +36,9 @@ snippetlocation="local"
 
 createTemplate() {
 	
-	pvesh get /cluster/resources --type vm --output-format yaml | egrep -i 'vmid' > $(pwd)/cache/vmidcheck.txt
+	pvesh get /cluster/resources --type vm --output-format yaml | egrep -i 'vmid' > $(dirname $0)/cache/vmidcheck.txt
 	
-	if grep -q "vmid: $1" "$(pwd)/cache/vmidcheck.txt" ; then
+	if grep -q "vmid: $1" "$(dirname $0)/cache/vmidcheck.txt" ; then
 	
 		if [ $keepold == 0 ] || [ $forceupdate == 1 ]; then
 		
@@ -47,14 +47,14 @@ createTemplate() {
 			fi
 			
 			qm destroy $1 -purge
-			rm $(pwd)/cache/vmidcheck.txt
+			rm $(dirname $0)/cache/vmidcheck.txt
 		else
 		
 			if [ $quiet == 0 ]; then
 				echo "VMID $1 already exists. Keep old templates is set and force update is not set. Skipping..."
 			fi
 			
-			rm $(pwd)/cache/vmidcheck.txt
+			rm $(dirname $0)/cache/vmidcheck.txt
 			return
 		fi
 	else
@@ -67,7 +67,7 @@ createTemplate() {
 	qm set $1 --net0 virtio,bridge=vmbr0
 	qm set $1 --serial0 socket --vga serial0
 	qm set $1 --memory 16384 --cores 4 --cpu host
-	qm set $1 --scsi0 $storagelocation:0,import-from="$(pwd)/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
+	qm set $1 --scsi0 $storagelocation:0,import-from="$(dirname $0)/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
 	qm set $1 --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set $1 --onboot 1
 	qm set $1 --agent enabled=1,fstrim_cloned_disks=1
@@ -141,32 +141,32 @@ if [ ! -d "cache" ]; then
 	mkdir cache/
 fi
 
-if [ -f "$(pwd)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
+if [ -f "$(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
 	if [ $quiet == 0 ]; then
 		echo "Old Debian Bookworm SHA512 sums found. Removing Debian Bookworm sums file."
 	fi
-	rm $(pwd)/cache/Debian-Bookworm-SHA512-sums.txt
+	rm $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
 fi
 
-if [ -f "$(pwd)/cache/debian-12-generic-amd64.qcow2" ]; then
+if [ -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
 	if [ $quiet == 0 ]; then
 		echo "Debian Bookworm image found in cache directory."
 	fi
-	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O $(pwd)/cache/Debian-Bookworm-SHA512-sums.txt
-	if ! grep -Fxq "$(sha512sum $(pwd)/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" $(pwd)/cache/Debian-Bookworm-SHA512-sums.txt
+	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
+	if ! grep -Fxq "$(sha512sum $(dirname $0)/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
 	then
 		if [ $quiet == 0 ]; then
 			echo "Debian Bookworm image SHA512 sum did not match new Debian Bookworm SHA512 sum. Removing old Debian Bookworm image."
 		fi
-		rm $(pwd)/cache/debian-12-generic-amd64.qcow2
+		rm $(dirname $0)/cache/debian-12-generic-amd64.qcow2
 	fi
 fi
 
-if [ ! -f "$(pwd)/cache/debian-12-generic-amd64.qcow2" ]; then
+if [ ! -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
 	if [ $quiet == 0 ]; then
 		echo "Downloading lastest Debian Bookworm image."
 	fi
-	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O $(pwd)/cache/debian-12-generic-amd64.qcow2
+	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O $(dirname $0)/cache/debian-12-generic-amd64.qcow2
 else
 	if [ $keepold == 0 ]; then
 		if [ $quiet == 0 ]; then
