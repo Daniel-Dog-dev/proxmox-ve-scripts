@@ -23,13 +23,13 @@
 #	SOFTWARE.
 
 if [ -z "$1" ]; then
-	pvesubscription set $1
-	pvesubscription update -force
-else
 	sed -i 's\deb\#deb\g' /etc/apt/sources.list.d/pve-enterprise.list
 	echo "# Proxmox VE pve-no-subscription repository provided by proxmox.com," >> /etc/apt/sources.list.d/pve-no-subscription.list
 	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/pve-no-subscription.list
 	echo "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription" >> /etc/apt/sources.list.d/pve-no-subscription.list
+else
+	pvesubscription set $1
+	pvesubscription update -force
 fi
 
 apt update
