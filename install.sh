@@ -22,9 +22,33 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
+if [ -z "$1" ]; then
+	pvesubscription set $1
+	pvesubscription update -force
+else
+	sed -i 's\deb\#deb\g' /etc/apt/sources.list.d/pve-enterprise.list
+	echo "# Proxmox VE pve-no-subscription repository provided by proxmox.com," >> /etc/apt/sources.list.d/pve-no-subscription.list
+	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/pve-no-subscription.list
+	echo "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription" >> /etc/apt/sources.list.d/pve-no-subscription.list
+fi
+
 apt update
 apt -y upgrade
-apt install -y figlet vim
+apt install -y figlet vim nala
+
+echo "" >> /root/.bashrc
+echo "# Use nala instead of APT as package manager" >> /root/.bashrc
+echo "apt() {" >> /root/.bashrc
+echo "  command nala \"\$@\"" >> /root/.bashrc
+echo "}" >> /root/.bashrc
+echo "sudo() {" >> /root/.bashrc
+echo "  if [ \"\$1\" = \"apt\" ]; then" >> /root/.bashrc
+echo "    shift" >> /root/.bashrc
+echo "    command sudo nala \"\$@\"" >> /root/.bashrc
+echo "  else" >> /root/.bashrc
+echo "    command sudo \"\$@\"" >> /root/.bashrc
+echo "  fi" >> /root/.bashrc
+echo "}" >> /root/.bashrc
 
 rm /etc/motd
 mv ./files/00-header /etc/update-motd.d/
@@ -46,7 +70,7 @@ pvesm set local --content snippets,iso,backup,vztmpl
 pvesm set local-lvm --content images,rootdir
 
 while [ ! -d "/var/lib/vz/snippets" ]; do
-	echo "No snippets dir yet. Waiting..."
+	echo "No snippets dir yet. Waiting for 5 seconds..."
     sleep 5s
 done
 
