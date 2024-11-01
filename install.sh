@@ -37,7 +37,7 @@ else
 fi
 
 apt update
-apt -y upgrade
+apt -y dist-upgrade
 apt install -y figlet vim dnsmasq
 
 rm /etc/motd
@@ -55,7 +55,7 @@ service sshd restart
 
 serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
 echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
-sed -i "s/$(hostname -I)/$serverhostname/g" /etc/motd
+sed -i "s/$(hostname -I)/$serverhostname/g" /etc/issue
 
 pvesm set local --content snippets,iso,backup,vztmpl
 pvesm set local-zfs --content images,rootdir
