@@ -31,7 +31,7 @@ keepold=0
 forceupdate=0
 quiet=0
 
-storagelocation="local-lvm"
+storagelocation="local-zfs"
 snippetlocation="local"
 
 createTemplate() {
