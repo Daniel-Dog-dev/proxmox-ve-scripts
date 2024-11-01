@@ -32,22 +32,18 @@ if [ -z "$1" ]; then
 	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/ceph-no-subscription.list
 	echo "deb http://download.proxmox.com/debian/ceph-quincy bookworm no-subscription" >> /etc/apt/sources.list.d/ceph-no-subscription.list
 else
-	pvesubscription set $1
-	pvesubscription update -force
-	echo "Waiting for license to activate..."
-	sleep 10s
-	subscription_status=$(pvesubscription get | grep 'status: active' &> /dev/null)
-	retries=0
-        while [ "$subscription_status" != 0 ]; do
-                if [ $retries -gt 4 ]; then
+        pvesubscription set $1
+        pvesubscription update -force
+        retries=0
+        while [[ ! $(pvesubscription get) =~ "status: active" ]]; do
+                if [ $retries -gt 5 ]; then
                         echo "Failed to active lincense. Please check your license key."
                         exit 1
                 fi
 
                 let "retries++"
-		echo "License is not (yet) active. Waiting 10 seconds..."
+                echo "License is not (yet) active. Waiting 10 seconds..."
                 sleep 10s
-		subscription_status=$(pvesubscription get | grep 'status: active' &> /dev/null)
         done
 fi
 
