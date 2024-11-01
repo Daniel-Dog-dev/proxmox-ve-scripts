@@ -34,6 +34,21 @@ if [ -z "$1" ]; then
 else
 	pvesubscription set $1
 	pvesubscription update -force
+	echo "Waiting for license to activate..."
+	sleep 10s
+	subscription_status=$(pvesubscription get | grep 'status: active' &> /dev/null)
+	retries=0
+        while [ "$subscription_status" != 0 ]; do
+                if [ $retries -gt 4 ]; then
+                        echo "Failed to active lincense. Please check your license key."
+                        exit 1
+                fi
+
+                let "retries++"
+		echo "License is not (yet) active. Waiting 10 seconds..."
+                sleep 10s
+		subscription_status=$(pvesubscription get | grep 'status: active' &> /dev/null)
+        done
 fi
 
 apt update
@@ -55,7 +70,6 @@ service sshd restart
 
 serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
 echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
-sed -i "s/$(hostname -I)/$serverhostname/g" /etc/issue
 
 pvesm set local --content snippets,iso,backup,vztmpl
 pvesm set local-zfs --content images,rootdir
