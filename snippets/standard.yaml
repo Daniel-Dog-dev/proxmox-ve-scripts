@@ -36,7 +36,6 @@ packages:
   - qemu-guest-agent
   - git
   - figlet
-  - nala
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
