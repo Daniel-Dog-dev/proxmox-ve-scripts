@@ -38,21 +38,7 @@ fi
 
 apt update
 apt -y upgrade
-apt install -y figlet vim nala
-
-echo "" >> /root/.bashrc
-echo "# Use nala instead of APT as package manager" >> /root/.bashrc
-echo "apt() {" >> /root/.bashrc
-echo "  command nala \"\$@\"" >> /root/.bashrc
-echo "}" >> /root/.bashrc
-echo "sudo() {" >> /root/.bashrc
-echo "  if [ \"\$1\" = \"apt\" ]; then" >> /root/.bashrc
-echo "    shift" >> /root/.bashrc
-echo "    command sudo nala \"\$@\"" >> /root/.bashrc
-echo "  else" >> /root/.bashrc
-echo "    command sudo \"\$@\"" >> /root/.bashrc
-echo "  fi" >> /root/.bashrc
-echo "}" >> /root/.bashrc
+apt install -y figlet vim dnsmasq
 
 rm /etc/motd
 mv ./files/00-header /etc/update-motd.d/
@@ -67,11 +53,12 @@ sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd
 sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
 service sshd restart
 
-#serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
-#echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
+serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
+echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
+sed -i "s/$(hostname -I)/$serverhostname/g" /etc/motd
 
 pvesm set local --content snippets,iso,backup,vztmpl
-pvesm set local-lvm --content images,rootdir
+pvesm set local-zfs --content images,rootdir
 
 while [ ! -d "/var/lib/vz/snippets" ]; do
 	echo "No snippets dir yet. Waiting for 5 seconds..."
