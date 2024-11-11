@@ -62,7 +62,7 @@ upload_file() {
 	
 	if [ -z $2 ]; then
 		echo "No VM ID provided."
-		echo "Please make sure the VM ID is provided as the second function argument."
+		echo "Please make sure the VM ID is provided as the second argument."
 		return 1
 	fi
 
@@ -130,19 +130,20 @@ if [ $1 == "backup-end" ]; then
 		exit $?
 	fi
 	
-	echo "1 or more backup uploads where not successfull."
+	echo "Backup upload was not successfull."
 	echo "Backup age deletion is skipped for safety!"
 	exit 1
 fi
 
 if [ $1 == "log-end" ]; then
+	
 	upload_file $LOGFILE $3
 	
 	if [ $? -eq 0 ]; then
 		exit 0
 	fi
 	
-	echo "1 or more backup log uploads where not successfull!"
+	echo "Backup log upload was not successfull!"
 	exit 1
 fi
 
