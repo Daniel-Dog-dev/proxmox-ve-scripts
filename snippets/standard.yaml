@@ -22,6 +22,9 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
+disable_root: true
+timezone: Europe/Berlin
+
 users:
   - name: admin
     ssh_authorized_keys:
@@ -32,6 +35,7 @@ users:
 
 package_update: true
 package_upgrade: true
+package_reboot_if_required: true
 packages:
   - qemu-guest-agent
   - git
