@@ -69,6 +69,7 @@ createTemplate() {
 	qm set $1 --onboot 1
 	qm set $1 --agent enabled=1,fstrim_cloned_disks=1
 	qm set $1 --ide2 $storagelocation:cloudinit
+	qm set $1 --ipconfig0 ip=dhcp,ip6=dhcp
 	qm set $1 --cicustom "user=$snippetlocation:snippets/$3"
 	qm disk resize $1 scsi0 50G
 	qm template $1
