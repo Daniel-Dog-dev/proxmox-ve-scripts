@@ -27,9 +27,8 @@ if [ `id -u` != 0 ]; then
 	exit 1
 fi
 
-keepold=0
-forceupdate=0
-quiet=0
+forceupdate=false
+verbose=true
 
 storagelocation="local-zfs"
 snippetlocation="local"
@@ -40,26 +39,22 @@ createTemplate() {
 	
 	if grep -q "vmid: $1" "$(dirname $0)/cache/vmidcheck.txt" ; then
 	
-		if [ $keepold == 0 ] || [ $forceupdate == 1 ]; then
+		if [ $forceupdate ]; then
 		
-			if [ $quiet == 0 ]; then
-				echo "Either keep old templates is not set or force update is set. Removing VM ID $1..."
+			if [ $verbose ]; then
+				echo "Force update is set. Removing VM ID $1..."
 			fi
 			
 			qm destroy $1 -purge
 			rm $(dirname $0)/cache/vmidcheck.txt
 		else
 		
-			if [ $quiet == 0 ]; then
-				echo "VMID $1 already exists. Keep old templates is set and force update is not set. Skipping..."
+			if [ $verbose ]; then
+				echo "VMID $1 already exists. Skipping..."
 			fi
 			
 			rm $(dirname $0)/cache/vmidcheck.txt
 			return
-		fi
-	else
-		if [ $quiet == 0 ]; then
-			echo "VM ID $1 does not yet exist."
 		fi
 	fi
 
@@ -77,106 +72,129 @@ createTemplate() {
 	qm template $1
 }
 
-userHelp()
+infoBanner()
 {
-   echo "Automaticly create VM templates with the lastest OS versions."
-   echo
-   echo "Syntax: create_template.sh [-h|-v|-n|-s]"
-   echo "options:"
-   echo "-h	Print this help page."
-   echo "-v	Print the script version."
-   echo "-n	Keep the 'old' templates. Only creates templates that do not exist."
-   echo "-s	Specify the template storage name for the VM disks and Cloud-Init disks."
-   echo "-f	Force template update even if there is no image change. (option -n gets ignored if provided.)"
-   echo "-q	Run script quietly."
+   echo "Copyright (c) 2023 realcryptonight"
+   echo ""
+   echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
+   echo "of this software and associated documentation files (the \"Software\"), to deal"
+   echo "in the Software without restriction, including without limitation the rights"
+   echo "to use, copy, modify, merge, publish, distribute, sublicense, and/or sell"
+   echo "copies of the Software, and to permit persons to whom the Software is"
+   echo "furnished to do so, subject to the following conditions:"
+   echo ""
+   echo "The above copyright notice and this permission notice shall be included in all"
+   echo "copies or substantial portions of the Software."
+   echo ""
+   echo "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR"
+   echo "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,"
+   echo "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE"
+   echo "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
+   echo "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,"
+   echo "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE"
+   echo "SOFTWARE."
    echo
 }
 
-while getopts "hvns:fq" opt; do
+while getopts "hvs:fq" opt; do
   case ${opt} in
 	h)
-	  userHelp
-	  exit 0
+		infoBanner
+		echo "Syntax: create_template.sh [-h|-v|-s|-f|-q]"
+   		echo "options:"
+   		echo "-h	Print this help page."
+   		echo "-v	Print the script version."
+   		echo "-s	Specify the template storage name for the VM disks and Cloud-Init disks."
+   		echo "-f	Force template update even if there is no image change."
+  		echo "-q	Run script quietly."
+		exit 0
 	  ;;
 	v)
-	  echo "Version: 1.0"
-	  exit 0
-	  ;;
-	n)
-	  keepold=1
+		echo "Version: 1.1"
+		infoBanner
+	  	exit 0
 	  ;;
 	s)
-	  storagelocation="${OPTARG}"
+	  	storagelocation="${OPTARG}"
 	  ;;
 	f)
-	  forceupdate=1
+	  	forceupdate=true
 	  ;;
 	q)
-	  quite=1
+	  	verbose=false
 	  ;;
     :)
-      echo "Option -${OPTARG} requires an argument."
-      exit 1
+      		echo "Option -${OPTARG} requires an argument."
+      		exit 1
       ;;
     ?)
-      echo "Invalid option: -${OPTARG}."
-      exit 1
+      		echo "Invalid option: -${OPTARG}."
+      		exit 1
       ;;
   esac
 done
 
 if [ -f "/var/lock/vm-template-update.lck" ]; then
-	if [ $quiet == 0 ]; then
-		echo "Template update script is already running."
-	fi
+	echo "Template update script is already running in a different instance. Exiting..."
 	exit 1
 fi
 
-echo "" > /var/lock/vm-template-update.lck
+echo $$ > /var/lock/vm-template-update.lck
 
 if [ ! -d "$(dirname $0)/cache" ]; then
-	if [ $quiet == 0 ]; then
+	if [ $verbose ]; then
 		echo "No cache directory found. Creating cache directory."
 	fi
-	mkdir $(dirname $0)/cache/
-fi
 
-if [ -f "$(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
-	if [ $quiet == 0 ]; then
-		echo "Old Debian Bookworm SHA512 sums found. Removing Debian Bookworm sums file."
+	mkdir $(dirname $0)/cache/
+
+	if [ $verbose ]; then
+		echo "Created cache directory."
 	fi
-	rm $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
 fi
 
 if [ -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
-	if [ $quiet == 0 ]; then
+	if [ $verbose ]; then
 		echo "Debian Bookworm image found in cache directory."
+		echo "Checking if cached Debian Bookworm is still the latest version..."
 	fi
+	
 	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
+	
 	if ! grep -Fxq "$(sha512sum $(dirname $0)/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
 	then
-		if [ $quiet == 0 ]; then
-			echo "Debian Bookworm image SHA512 sum did not match new Debian Bookworm SHA512 sum. Removing old Debian Bookworm image."
+		if [ $verbose ]; then
+			echo "The cached Debian Bookworm image seems to be old. Removing old cached Debian Bookworm image."
 		fi
+		
 		rm $(dirname $0)/cache/debian-12-generic-amd64.qcow2
+
+		if [ $verbose ]; then
+			echo "Removed old cached Debian Bookworm image."
+		fi
+	else
+		if [ $verbose ]; then
+			echo "The cached Debian Bookworm image seems to be up-to-date. Skipping new image download."
+		fi
 	fi
 fi
 
 if [ ! -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
-	if [ $quiet == 0 ]; then
+	if [ $verbose ]; then
 		echo "Downloading lastest Debian Bookworm image."
 	fi
+	
 	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O $(dirname $0)/cache/debian-12-generic-amd64.qcow2
-else
-	if [ $keepold == 0 ]; then
-		if [ $quiet == 0 ]; then
-			echo "No new Debian Bookworm image downloaded. Setting keep old to true."
-		fi
-		keepold=1
+
+	if [ $verbose ]; then
+		echo "Downloaded lastest Debian Bookworm image."
 	fi
 fi
 
 createTemplate 900 "Debian-Bookworm-template" standard.yaml
 createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
 
+if [ -f "$(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
+	rm $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
+fi
 rm /var/lock/vm-template-update.lck
