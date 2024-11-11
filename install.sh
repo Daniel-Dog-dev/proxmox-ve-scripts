@@ -85,4 +85,4 @@ chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
 /custom-scripts/create_templates.sh
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh" >> /etc/crontab
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh -q" >> /etc/crontab
