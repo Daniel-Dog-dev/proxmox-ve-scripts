@@ -116,7 +116,7 @@ while getopts "b:hvs:fq" opt; do
 		networkbridge=${OPTARG}
 	  ;;
 	v)
-		echo "Version: 1.1"
+		echo "Version: 1.2"
 		infoBanner
 	  	exit 0
 	  ;;
