@@ -30,8 +30,10 @@ fi
 forceupdate=false
 verbose=true
 
-storagelocation="local-zfs"
+storagelocation="local-lvm"
 snippetlocation="local"
+
+networkbrdige="vmbr0"
 
 createTemplate() {
 	
@@ -59,7 +61,7 @@ createTemplate() {
 	fi
 
 	qm create $1 --name $2 --ostype l26
-	qm set $1 --net0 virtio,bridge=vmbr0
+	qm set $1 --net0 virtio,bridge=$networkbridge
 	qm set $1 --serial0 socket --vga serial0
 	qm set $1 --memory 16384 --cores 4 --cpu host
 	qm set $1 --scsi0 $storagelocation:0,import-from="$(dirname $0)/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
@@ -96,18 +98,22 @@ infoBanner()
    echo
 }
 
-while getopts "hvs:fq" opt; do
+while getopts "b:hvs:fq" opt; do
   case ${opt} in
 	h)
 		infoBanner
-		echo "Syntax: create_template.sh [-h|-v|-s|-f|-q]"
+		echo "Syntax: create_template.sh [-b|-h|-v|-s|-f|-q]"
    		echo "options:"
+		echo "-b	Specify the network bridge name for the VM network card. (Default: vmbr0)"
    		echo "-h	Print this help page."
    		echo "-v	Print the script version."
    		echo "-s	Specify the template storage name for the VM disks and Cloud-Init disks."
    		echo "-f	Force template update even if there is no image change."
   		echo "-q	Run script quietly."
 		exit 0
+	  ;;
+	b)
+		networkbridge=${OPTARG}
 	  ;;
 	v)
 		echo "Version: 1.1"
