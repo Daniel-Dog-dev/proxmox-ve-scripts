@@ -113,11 +113,11 @@ while getopts "b:hvs:fq" opt; do
 		exit 0
 	  ;;
 	b)
-		networkbridge=${OPTARG}
+		networkbridge="${OPTARG}"
 	  ;;
 	v)
-		echo "Version: 1.2"
 		infoBanner
+		echo "Version: 1.2"
 	  	exit 0
 	  ;;
 	s)
