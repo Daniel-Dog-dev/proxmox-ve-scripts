@@ -39,9 +39,9 @@ createTemplate() {
 	
 	if grep -q "vmid: $1" "$(dirname $0)/cache/vmidcheck.txt" ; then
 	
-		if [ $forceupdate ]; then
+		if $forceupdate ; then
 		
-			if [ $verbose ]; then
+			if $verbose ; then
 				echo "Force update is set. Removing VM ID $1..."
 			fi
 			
@@ -49,7 +49,7 @@ createTemplate() {
 			rm $(dirname $0)/cache/vmidcheck.txt
 		else
 		
-			if [ $verbose ]; then
+			if $verbose ; then
 				echo "VMID $1 already exists. Skipping..."
 			fi
 			
@@ -142,19 +142,19 @@ fi
 echo $$ > /var/lock/vm-template-update.lck
 
 if [ ! -d "$(dirname $0)/cache" ]; then
-	if [ $verbose ]; then
+	if $verbose ; then
 		echo "No cache directory found. Creating cache directory."
 	fi
 
 	mkdir $(dirname $0)/cache/
 
-	if [ $verbose ]; then
+	if $verbose ; then
 		echo "Created cache directory."
 	fi
 fi
 
 if [ -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
-	if [ $verbose ]; then
+	if $verbose ; then
 		echo "Debian Bookworm image found in cache directory."
 		echo "Checking if cached Debian Bookworm is still the latest version..."
 	fi
@@ -163,30 +163,30 @@ if [ -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
 	
 	if ! grep -Fxq "$(sha512sum $(dirname $0)/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
 	then
-		if [ $verbose ]; then
+		if $verbose ; then
 			echo "The cached Debian Bookworm image seems to be old. Removing old cached Debian Bookworm image."
 		fi
 		
 		rm $(dirname $0)/cache/debian-12-generic-amd64.qcow2
 
-		if [ $verbose ]; then
+		if $verbose ; then
 			echo "Removed old cached Debian Bookworm image."
 		fi
 	else
-		if [ $verbose ]; then
+		if $verbose ; then
 			echo "The cached Debian Bookworm image seems to be up-to-date. Skipping new image download."
 		fi
 	fi
 fi
 
 if [ ! -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
-	if [ $verbose ]; then
+	if $verbose ; then
 		echo "Downloading lastest Debian Bookworm image."
 	fi
 	
 	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O $(dirname $0)/cache/debian-12-generic-amd64.qcow2
 
-	if [ $verbose ]; then
+	if $verbose ; then
 		echo "Downloaded lastest Debian Bookworm image."
 	fi
 fi
