@@ -64,6 +64,7 @@ createTemplate() {
 	qm set $1 --net0 virtio,bridge=$networkbridge
 	qm set $1 --serial0 socket --vga serial0
 	qm set $1 --memory 16384 --cores 4 --cpu host
+	qm set $1 --balloon 4096
 	qm set $1 --scsi0 $storagelocation:0,import-from="$(dirname $0)/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
 	qm set $1 --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set $1 --onboot 1
