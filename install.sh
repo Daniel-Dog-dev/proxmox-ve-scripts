@@ -162,8 +162,8 @@ mv ./custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
-/custom-scripts/create_templates.sh -s "$storagetype"
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh -q -s \"$storagetype\"" >> /etc/crontab
+/custom-scripts/create_templates.sh -s "$storagelocation"
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh -q -s \"$storagelocation\"" >> /etc/crontab
 
 if [ "$pvesshkeysurl" != "" ];
 then
