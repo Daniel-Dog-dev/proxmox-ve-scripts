@@ -100,7 +100,7 @@ if [ "$pvelicense" == "none" ]; then
 else
 	if [[ ! "$pvelicense" =~ \s*pve([1248])([cbsp])-([0-9a-f]){10}\s* ]];
 	then
-		echo "License key does not match regex. Key is not vaid."
+		echo "Proxmox VE license key is invalid!"
 		exit 1
 	fi
         pvesubscription set $pvelicense
