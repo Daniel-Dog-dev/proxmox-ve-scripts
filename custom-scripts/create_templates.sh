@@ -33,7 +33,7 @@ verbose=true
 storagelocation="local-lvm"
 snippetlocation="local"
 
-networkbrdige="vmbr0"
+networkbridge="vmbr0"
 
 createTemplate() {
 	
@@ -119,7 +119,7 @@ while getopts "b:hvs:fq" opt; do
 	  ;;
 	v)
 		infoBanner
-		echo "Version: 1.2"
+		echo "Version: 1.2.1"
 	  	exit 0
 	  ;;
 	s)
