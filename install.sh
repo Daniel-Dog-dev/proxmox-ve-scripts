@@ -98,6 +98,11 @@ if [ "$pvelicense" == "none" ]; then
 	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/ceph-no-subscription.list
 	echo "deb http://download.proxmox.com/debian/ceph-quincy bookworm no-subscription" >> /etc/apt/sources.list.d/ceph-no-subscription.list
 else
+	if [[ ! "$pvelicense" =~ \s*pve([1248])([cbsp])-([0-9a-f]){10}\s* ]];
+	then
+		echo "License key does not match regex. Key is not vaid."
+		exit 1
+	fi
         pvesubscription set $pvelicense
         pvesubscription update -force
         retries=0
