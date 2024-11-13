@@ -146,7 +146,7 @@ serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]
 echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
 
 pvesm set local --content snippets,iso,backup,vztmpl
-pvesm set local-zfs --content images,rootdir
+pvesm set $storagelocation --content images,rootdir
 
 while [ ! -d "/var/lib/vz/snippets" ]; do
 	echo "No snippets dir yet. Waiting for 5 seconds..."
@@ -165,7 +165,7 @@ chmod 755 /custom-scripts/backup_upload.sh
 /custom-scripts/create_templates.sh -s "$storagetype"
 echo "0 5    * * *   root    /custom-scripts/create_templates.sh -q -s \"$storagetype\"" >> /etc/crontab
 
-if [ "$pvesshkeysurl" != ""];
+if [ "$pvesshkeysurl" != "" ];
 then
 	echo "URL for user \"root\" authorized_keys file is given."
 	
