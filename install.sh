@@ -56,11 +56,11 @@ while getopts "l:s:k:hv" opt; do
 		infoBanner
 		echo "Syntax: install.sh [-l|-s|-h|-v]"
    		echo "options:"
-		echo "-l (required)	Specify the Proxmox VE license key (Default: none)"
-		echo "-s (optional)	Specify the VM disk location. (Default: auto detect)"
-		echo "-k (optional)	Specify a URL to get the authorized_keys file from for user \"root\""
-		echo "-h		Print this help page."
-   		echo "-v		Print the script version."
+		echo "-l	Specify the Proxmox VE license key (Default: none)"
+		echo "-s	Specify the VM disk location. (Default: auto detect)"
+		echo "-k	Specify a URL to get the authorized_keys file from for root user"
+		echo "-h	Print this help page."
+   		echo "-v	Print the script version."
 		exit 0
 	  ;;
 	l)
@@ -108,7 +108,7 @@ else
         retries=0
         while [[ ! $(pvesubscription get) =~ "status: active" ]]; do
                 if [ $retries -gt 5 ]; then
-                        echo "Failed to active lincense. Please check your license key."
+                        echo "Failed to active license. Please check your license key."
                         exit 1
                 fi
 
