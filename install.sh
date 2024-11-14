@@ -132,6 +132,8 @@ else
                 echo "License is not (yet) active. Waiting 10 seconds..."
                 sleep 10s
         done
+	echo "Waiting 20 seconds for APT to get authentication data for Enterprise repository."
+	sleep 20s
 fi
 
 if [ "$storagelocation" == "auto" ];
