@@ -26,6 +26,10 @@ pvelicense="none"
 storagelocation="auto"
 pvesshkeysurl=""
 
+vcores=4
+memory=16384
+balloonmemory=4096
+
 infoBanner()
 {
    echo "Copyright (c) 2023 realcryptonight"
@@ -50,21 +54,33 @@ infoBanner()
    echo
 }
 
-while getopts "l:s:k:hv" opt; do
+while getopts "b:c:hl:m:s:k:v" opt; do
   case ${opt} in
+	b)
+		balloonmemory="${OPTARG}"
+	  ;;
+	c)
+		vcores="${OPTARG}"
+	  ;;
 	h)
 		infoBanner
 		echo "Syntax: install.sh [-l|-s|-h|-v]"
    		echo "options:"
+		echo "-b	Specify the minimum balloon memory. (in MiB) (Default: 4096)"
+		echo "-c	Specify the vcores assigned to the template VM. (Default: 4)"
+		echo "-h	Print this help page."
 		echo "-l	Specify the Proxmox VE license key (Default: none)"
+		echo "-m	Specify the memory amount for the VM. (in MiB) (Default: 16384)"
 		echo "-s	Specify the VM disk location. (Default: auto detect)"
 		echo "-k	Specify a URL to get the authorized_keys file from for root user"
-		echo "-h	Print this help page."
    		echo "-v	Print the script version."
 		exit 0
 	  ;;
 	l)
 		pvelicense="${OPTARG}"
+	  ;;
+	m)
+		memory="${OPTARG}"
 	  ;;
 	s)
 	  	storagelocation="${OPTARG}"
@@ -167,8 +183,8 @@ mv ./custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
-/custom-scripts/create_templates.sh -s "$storagelocation"
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh -q -s \"$storagelocation\"" >> /etc/crontab
+/custom-scripts/create_templates.sh -b "$balloonmemory" -c "$vcores" -m "$memory" -s "$storagelocation"
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh -b \"$balloonmemory\" -c \"$vcores\" -m \"$memory\" -s \"$storagelocation\" -q" >> /etc/crontab
 
 if [ "$pvesshkeysurl" != "" ];
 then

@@ -35,6 +35,10 @@ snippetlocation="local"
 
 networkbridge="vmbr0"
 
+vcores=4
+memory=16384
+balloonmemory=4096
+
 createTemplate() {
 	
 	pvesh get /cluster/resources --type vm --output-format yaml | egrep -i 'vmid' > $(dirname $0)/cache/vmidcheck.txt
@@ -63,8 +67,8 @@ createTemplate() {
 	qm create $1 --name $2 --ostype l26
 	qm set $1 --net0 virtio,bridge=$networkbridge
 	qm set $1 --serial0 socket --vga serial0
-	qm set $1 --memory 16384 --cores 4 --cpu host
-	qm set $1 --balloon 4096
+	qm set $1 --memory $memory --cores $vcores --cpu host
+	qm set $1 --balloon $balloonmemory
 	qm set $1 --scsi0 $storagelocation:0,import-from="$(dirname $0)/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
 	qm set $1 --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set $1 --onboot 1
@@ -100,26 +104,38 @@ infoBanner()
    echo
 }
 
-while getopts "b:hvs:fq" opt; do
+while getopts "b:c:hm:n:vs:fq" opt; do
   case ${opt} in
+	b)
+		balloonmemory="${OPTARG}"
+	  ;;
+	c)
+		vcores="${OPTARG}"
+	  ;;
 	h)
 		infoBanner
 		echo "Syntax: create_template.sh [-b|-h|-v|-s|-f|-q]"
    		echo "options:"
-		echo "-b	Specify the network bridge name for the VM network card. (Default: vmbr0)"
+		echo "-b	Specify the minimum balloon memory. (in MiB) (Default: 4096)"
+		echo "-c	Specify the vcores assigned to the template VM. (Default: 4)"
    		echo "-h	Print this help page."
+		echo "-m	Specify the memory amount for the VM. (In MiB) (Default: 16384)"
+		echo "-n	Specify the network bridge name for the VM network card. (Default: vmbr0)"
    		echo "-v	Print the script version."
    		echo "-s	Specify the template storage name for the VM disks and Cloud-Init disks."
    		echo "-f	Force template update even if there is no image change."
   		echo "-q	Run script quietly."
 		exit 0
 	  ;;
-	b)
+	m)
+		memory="${OPTARG}"
+	  ;;
+	n)
 		networkbridge="${OPTARG}"
 	  ;;
 	v)
 		infoBanner
-		echo "Version: 1.2.1"
+		echo "Version: 1.3"
 	  	exit 0
 	  ;;
 	s)
@@ -131,14 +147,14 @@ while getopts "b:hvs:fq" opt; do
 	q)
 	  	verbose=false
 	  ;;
-    :)
+	:)
       		echo "Option -${OPTARG} requires an argument."
       		exit 1
-      ;;
-    ?)
+	  ;;
+	?)
       		echo "Invalid option: -${OPTARG}."
       		exit 1
-      ;;
+	  ;;
   esac
 done
 
