@@ -23,6 +23,7 @@
 #	SOFTWARE.
 
 disable_root: true
+ssh_pwauth: false
 timezone: Europe/Berlin
 
 users:
