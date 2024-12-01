@@ -41,6 +41,8 @@ vcores=4
 memory=16384
 balloonmemory=4096
 
+pool=""
+
 createTemplate() {
 	
 	pvesh get /cluster/resources --type vm --output-format yaml | egrep -i 'vmid' > $scriptpath/cache/vmidcheck.txt
@@ -80,6 +82,10 @@ createTemplate() {
 	qm set $1 --cicustom "user=$snippetlocation:snippets/$3"
 	qm disk resize $1 scsi0 50G
 	qm template $1
+	if [ ! -z "$pool" ];
+	then
+		pvesh set /pools/$pool -vms $1
+	fi
 }
 
 infoBanner()
@@ -104,9 +110,9 @@ infoBanner()
    echo "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE"
    echo "SOFTWARE."
    echo
-}
+}pvesh set /pools/{poolid} -vms {vmid}
 
-while getopts "b:c:hm:n:vs:fq" opt; do
+while getopts "b:c:hm:n:p:vs:fq" opt; do
   case ${opt} in
 	b)
 		balloonmemory="${OPTARG}"
@@ -123,6 +129,7 @@ while getopts "b:c:hm:n:vs:fq" opt; do
    		echo "-h	Print this help page."
 		echo "-m	Specify the memory amount for the VM. (In MiB) (Default: 16384)"
 		echo "-n	Specify the network bridge name for the VM network card. (Default: vmbr0)"
+		echo "-p	Specify the pool name that the VM should be in. (Default: none)"
    		echo "-v	Print the script version."
    		echo "-s	Specify the template storage name for the VM disks and Cloud-Init disks."
    		echo "-f	Force template update even if there is no image change."
@@ -134,6 +141,9 @@ while getopts "b:c:hm:n:vs:fq" opt; do
 	  ;;
 	n)
 		networkbridge="${OPTARG}"
+	  ;;
+	p)
+		pool="${OPTARG}"
 	  ;;
 	v)
 		infoBanner
