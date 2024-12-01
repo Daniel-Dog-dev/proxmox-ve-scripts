@@ -217,6 +217,7 @@ fi
 
 createTemplate 900 "Debian-Bookworm-template" standard.yaml
 createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
+createTemplate 902 "Debian-Bookworm-SFTP-storage" sftp-storage.yaml
 
 if [ -f "$(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
 	rm $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
