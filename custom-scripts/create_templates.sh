@@ -41,9 +41,9 @@ balloonmemory=4096
 
 createTemplate() {
 	
-	pvesh get /cluster/resources --type vm --output-format yaml | egrep -i 'vmid' > $(dirname $0)/cache/vmidcheck.txt
+	pvesh get /cluster/resources --type vm --output-format yaml | egrep -i 'vmid' > $(realpath $0)/cache/vmidcheck.txt
 	
-	if grep -q "vmid: $1" "$(dirname $0)/cache/vmidcheck.txt" ; then
+	if grep -q "vmid: $1" "$(realpath $0)/cache/vmidcheck.txt" ; then
 	
 		if $forceupdate ; then
 		
@@ -52,14 +52,14 @@ createTemplate() {
 			fi
 			
 			qm destroy $1 -purge
-			rm $(dirname $0)/cache/vmidcheck.txt
+			rm $(realpath $0)/cache/vmidcheck.txt
 		else
 		
 			if $verbose ; then
 				echo "VMID $1 already exists. Skipping..."
 			fi
 			
-			rm $(dirname $0)/cache/vmidcheck.txt
+			rm $(realpath $0)/cache/vmidcheck.txt
 			return
 		fi
 	fi
@@ -69,7 +69,7 @@ createTemplate() {
 	qm set $1 --serial0 socket --vga serial0
 	qm set $1 --memory $memory --cores $vcores --cpu host
 	qm set $1 --balloon $balloonmemory
-	qm set $1 --scsi0 $storagelocation:0,import-from="$(dirname $0)/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
+	qm set $1 --scsi0 $storagelocation:0,import-from="$(realpath $0)/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
 	qm set $1 --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set $1 --onboot 1
 	qm set $1 --agent enabled=1,fstrim_cloned_disks=1
@@ -165,33 +165,33 @@ fi
 
 echo $$ > /var/lock/vm-template-update.lck
 
-if [ ! -d "$(dirname $0)/cache" ]; then
+if [ ! -d "$(realpath $0)/cache" ]; then
 	if $verbose ; then
 		echo "No cache directory found. Creating cache directory."
 	fi
 
-	mkdir $(dirname $0)/cache/
+	mkdir $(realpath $0)/cache/
 
 	if $verbose ; then
 		echo "Created cache directory."
 	fi
 fi
 
-if [ -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
+if [ -f "$(realpath $0)/cache/debian-12-generic-amd64.qcow2" ]; then
 	if $verbose ; then
 		echo "Debian Bookworm image found in cache directory."
 		echo "Checking if cached Debian Bookworm is still the latest version..."
 	fi
 	
-	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
+	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O $(realpath $0)/cache/Debian-Bookworm-SHA512-sums.txt
 	
-	if ! grep -Fxq "$(sha512sum $(dirname $0)/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
+	if ! grep -Fxq "$(sha512sum $(realpath $0)/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" $(realpath $0)/cache/Debian-Bookworm-SHA512-sums.txt
 	then
 		if $verbose ; then
 			echo "The cached Debian Bookworm image seems to be old. Removing old cached Debian Bookworm image."
 		fi
 		
-		rm $(dirname $0)/cache/debian-12-generic-amd64.qcow2
+		rm $(realpath $0)/cache/debian-12-generic-amd64.qcow2
 
 		if $verbose ; then
 			echo "Removed old cached Debian Bookworm image."
@@ -203,12 +203,12 @@ if [ -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
 	fi
 fi
 
-if [ ! -f "$(dirname $0)/cache/debian-12-generic-amd64.qcow2" ]; then
+if [ ! -f "$(realpath $0)/cache/debian-12-generic-amd64.qcow2" ]; then
 	if $verbose ; then
 		echo "Downloading lastest Debian Bookworm image."
 	fi
 	
-	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O $(dirname $0)/cache/debian-12-generic-amd64.qcow2
+	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O $(realpath $0)/cache/debian-12-generic-amd64.qcow2
 
 	if $verbose ; then
 		echo "Downloaded lastest Debian Bookworm image."
@@ -219,7 +219,7 @@ createTemplate 900 "Debian-Bookworm-template" standard.yaml
 createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
 createTemplate 902 "Debian-Bookworm-SFTP-storage" sftp-storage.yaml
 
-if [ -f "$(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
-	rm $(dirname $0)/cache/Debian-Bookworm-SHA512-sums.txt
+if [ -f "$(realpath $0)/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
+	rm $(realpath $0)/cache/Debian-Bookworm-SHA512-sums.txt
 fi
 rm /var/lock/vm-template-update.lck
