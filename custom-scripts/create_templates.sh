@@ -22,12 +22,12 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
-if [ `id -u` != 0 ]; then
+if [ "$(id -u)" != 0 ]; then
 	echo "This script requires root privileges."
 	exit 1
 fi
 
-scriptpath=$(dirname $(realpath -s $0))
+scriptpath=$(dirname "$(realpath -s "$0")")
 
 forceupdate=false
 verbose=true
@@ -45,7 +45,7 @@ pool=""
 
 createTemplate() {
 	
-	pvesh get /cluster/resources --type vm --output-format yaml | egrep -i 'vmid' > $scriptpath/cache/vmidcheck.txt
+	pvesh get /cluster/resources --type vm --output-format yaml | grep -E -i 'vmid' > "$scriptpath"/cache/vmidcheck.txt
 	
 	if grep -q "vmid: $1" "$scriptpath/cache/vmidcheck.txt" ; then
 	
@@ -55,36 +55,36 @@ createTemplate() {
 				echo "Force update is set. Removing VM ID $1..."
 			fi
 			
-			qm destroy $1 -purge
-			rm $scriptpath/cache/vmidcheck.txt
+			qm destroy "$1" -purge
+			rm "$scriptpath"/cache/vmidcheck.txt
 		else
 		
 			if $verbose ; then
 				echo "VMID $1 already exists. Skipping..."
 			fi
 			
-			rm $scriptpath/cache/vmidcheck.txt
+			rm "$scriptpath"/cache/vmidcheck.txt
 			return
 		fi
 	fi
 
-	qm create $1 --name $2 --ostype l26
-	qm set $1 --net0 virtio,bridge=$networkbridge
-	qm set $1 --serial0 socket --vga serial0
-	qm set $1 --memory $memory --cores $vcores --cpu host
-	qm set $1 --balloon $balloonmemory
-	qm set $1 --scsi0 $storagelocation:0,import-from="$scriptpath/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
-	qm set $1 --boot order=scsi0 --scsihw virtio-scsi-single
-	qm set $1 --onboot 1
-	qm set $1 --agent enabled=1,fstrim_cloned_disks=1
-	qm set $1 --ide2 $storagelocation:cloudinit
-	qm set $1 --ipconfig0 ip=dhcp,ip6=dhcp
-	qm set $1 --cicustom "user=$snippetlocation:snippets/$3"
-	qm disk resize $1 scsi0 50G
-	qm template $1
-	if [ ! -z "$pool" ];
+	qm create "$1" --name "$2" --ostype l26
+	qm set "$1" --net0 virtio,bridge="$networkbridge"
+	qm set "$1" --serial0 socket --vga serial0
+	qm set "$1" --memory "$memory" --cores "$vcores" --cpu host
+	qm set "$1" --balloon "$balloonmemory"
+	qm set "$1" --scsi0 "$storagelocation":0,import-from="$scriptpath/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
+	qm set "$1" --boot order=scsi0 --scsihw virtio-scsi-single
+	qm set "$1" --onboot 1
+	qm set "$1" --agent enabled=1,fstrim_cloned_disks=1
+	qm set "$1" --ide2 "$storagelocation":cloudinit
+	qm set "$1" --ipconfig0 ip=dhcp,ip6=dhcp
+	qm set "$1" --cicustom "user=$snippetlocation:snippets/$3"
+	qm disk resize "$1" scsi0 50G
+	qm template "$1"
+	if [ -n "$pool" ];
 	then
-		pvesh set /pools/$pool -vms $1
+		pvesh set /pools/"$pool" -vms "$1"
 	fi
 }
 
@@ -110,7 +110,7 @@ infoBanner()
    echo "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE"
    echo "SOFTWARE."
    echo
-}pvesh set /pools/{poolid} -vms {vmid}
+}
 
 while getopts "b:c:hm:n:p:vs:fq" opt; do
   case ${opt} in
@@ -182,7 +182,7 @@ if [ ! -d "$scriptpath/cache" ]; then
 		echo "No cache directory found. Creating cache directory."
 	fi
 
-	mkdir $scriptpath/cache/
+	mkdir "$scriptpath"/cache/
 
 	if $verbose ; then
 		echo "Created cache directory."
@@ -195,15 +195,15 @@ if [ -f "$scriptpath/cache/debian-12-generic-amd64.qcow2" ]; then
 		echo "Checking if cached Debian Bookworm is still the latest version..."
 	fi
 	
-	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O $scriptpath/cache/Debian-Bookworm-SHA512-sums.txt
+	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
 	
-	if ! grep -Fxq "$(sha512sum $scriptpath/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" $scriptpath/cache/Debian-Bookworm-SHA512-sums.txt
+	if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
 	then
 		if $verbose ; then
 			echo "The cached Debian Bookworm image seems to be old. Removing old cached Debian Bookworm image."
 		fi
 		
-		rm $scriptpath/cache/debian-12-generic-amd64.qcow2
+		rm "$scriptpath"/cache/debian-12-generic-amd64.qcow2
 
 		if $verbose ; then
 			echo "Removed old cached Debian Bookworm image."
@@ -220,7 +220,7 @@ if [ ! -f "$scriptpath/cache/debian-12-generic-amd64.qcow2" ]; then
 		echo "Downloading lastest Debian Bookworm image."
 	fi
 	
-	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O $scriptpath/cache/debian-12-generic-amd64.qcow2
+	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O "$scriptpath"/cache/debian-12-generic-amd64.qcow2
 
 	if $verbose ; then
 		echo "Downloaded lastest Debian Bookworm image."
@@ -232,6 +232,6 @@ createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
 createTemplate 902 "Debian-Bookworm-SFTP-storage" sftp-storage.yaml
 
 if [ -f "$scriptpath/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
-	rm $scriptpath/cache/Debian-Bookworm-SHA512-sums.txt
+	rm "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
 fi
 rm /var/lock/vm-template-update.lck
