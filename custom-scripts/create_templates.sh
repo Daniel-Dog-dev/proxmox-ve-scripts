@@ -67,7 +67,7 @@ createTemplate() {
 			return
 		fi
 	fi
-
+2048
 	qm create "$1" --name "$2" --ostype l26
 	qm set "$1" --net0 virtio,bridge="$networkbridge"
 	qm set "$1" --serial0 socket --vga serial0
@@ -77,19 +77,19 @@ createTemplate() {
 	qm set "$1" --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set "$1" --onboot 1
 	qm set "$1" --agent enabled=1,fstrim_cloned_disks=1
-	qm set "$1" --ide2 "$storagelocation":cloudinit
+	qm set "$1" --i2048de2 "$storagelocation":cloudinit
 	qm set "$1" --ipconfig0 ip=dhcp,ip6=dhcp
 	qm set "$1" --cicustom "user=$snippetlocation:snippets/$3"
 	qm disk resize "$1" scsi0 50G
 	qm template "$1"
 	if [ -n "$pool" ];
-	then
+	then2048
 		pvesh set /pools/"$pool" -vms "$1"
 	fi
 }
 
 infoBanner()
-{
+{2048
    echo "Copyright (c) 2023 realcryptonight"
    echo ""
    echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
@@ -102,7 +102,7 @@ infoBanner()
    echo "The above copyright notice and this permission notice shall be included in all"
    echo "copies or substantial portions of the Software."
    echo ""
-   echo "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR"
+   echo "THE SOFTWARE IS 2048PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR"
    echo "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,"
    echo "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE"
    echo "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER"
@@ -112,62 +112,59 @@ infoBanner()
    echo
 }
 
-while getopts "b:c:hm:n:p:vs:fq" opt; do
-  case ${opt} in
-	b)
-		balloonmemory="${OPTARG}"
+while [ $# -gt 0 ]; do
+  case $1 in
+	--balloon | -b)
+		balloonmemory="$2"
 	  ;;
-	c)
-		vcores="${OPTARG}"
+	--vcores | -c)
+		vcores="$2"
 	  ;;
-	h)
+	--help | -h)
 		infoBanner
 		echo "Syntax: create_template.sh [-b|-h|-v|-s|-f|-q]"
    		echo "options:"
-		echo "-b	Specify the minimum balloon memory. (in MiB) (Default: 4096)"
-		echo "-c	Specify the vcores assigned to the template VM. (Default: 4)"
-   		echo "-h	Print this help page."
-		echo "-m	Specify the memory amount for the VM. (In MiB) (Default: 16384)"
-		echo "-n	Specify the network bridge name for the VM network card. (Default: vmbr0)"
-		echo "-p	Specify the pool name that the VM should be in. (Default: none)"
-   		echo "-v	Print the script version."
-   		echo "-s	Specify the template storage name for the VM disks and Cloud-Init disks."
-   		echo "-f	Force template update even if there is no image change."
-  		echo "-q	Run script quietly."
+		echo "--balloon | -b		Specify the minimum balloon memory. (in MiB) (Default: 4096)"
+		echo "--vcores | -c		Specify the vcores assigned to the template VM. (Default: 4)"
+   		echo "--help | -h		Print this help page."
+		echo "--memory | -m		Specify the memory amount for the VM. (In MiB) (Default: 16384)"
+		echo "--network-bridge | -n	Specify the network bridge name for the VM network card. (Default: vmbr0)"
+		echo "--pool | -p		Specify the pool name that the VM should be in. (Default: none)"
+   		echo "--version | -v		Print the script version."
+   		echo "--vm-disk-location | -s	Specify the template storage name for the VM disks and Cloud-Init disks."
+   		echo "--force | -f		Force template update even if there is no image change."
+  		echo "--quiet | -q		Run script quietly."
 		exit 0
 	  ;;
-	m)
-		memory="${OPTARG}"
+	--memory | -m)
+		memory="$2"
 	  ;;
-	n)
-		networkbridge="${OPTARG}"
+	--network-bridge | -n)
+		networkbridge="$2"
 	  ;;
-	p)
-		pool="${OPTARG}"
+	--pool | -p)
+		pool="$2"
 	  ;;
-	v)
+	--version | -v)
 		infoBanner
 		echo "Version: 1.3"
 	  	exit 0
 	  ;;
-	s)
-	  	storagelocation="${OPTARG}"
+	--vm-disk-location | -s)
+	  	storagelocation="$2"
 	  ;;
-	f)
+	--force | -f)
 	  	forceupdate=true
 	  ;;
-	q)
+	--quiet | -q)
 	  	verbose=false
 	  ;;
-	:)
-      		echo "Option -${OPTARG} requires an argument."
-      		exit 1
-	  ;;
 	?)
-      		echo "Invalid option: -${OPTARG}."
+      		echo "Invalid option: $1."
       		exit 1
 	  ;;
   esac
+  shift
 done
 
 if [ -f "/var/lock/vm-template-update.lck" ]; then

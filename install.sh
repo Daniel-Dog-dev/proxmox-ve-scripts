@@ -59,7 +59,7 @@ while [ $# -gt 0 ]; do
 	--balloon | -b)
 		balloonmemory="$2"
 	  ;;
-	--cores | -c)
+	--vcores | -c)
 		vcores="$2"
 	  ;;
 	--help | h)
@@ -178,5 +178,5 @@ mv ./custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
-/custom-scripts/create_templates.sh -b "$balloonmemory" -c "$vcores" -m "$memory" -s "$storagelocation"
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh -b \"$balloonmemory\" -c \"$vcores\" -m \"$memory\" -s \"$storagelocation\" -q" >> /etc/crontab
+/custom-scripts/create_templates.sh --balloon "$balloonmemory" --vcores "$vcores" --memory "$memory" --vm-disk-location "$storagelocation"
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh --balloon \"$balloonmemory\" --vcores \"$vcores\" --memory \"$memory\" --vm-disk-location \"$storagelocation\" -q" >> /etc/crontab
