@@ -83,7 +83,7 @@ createTemplate() {
 	qm disk resize "$1" scsi0 50G
 	qm template "$1"
 	if [ -n "$pool" ];
-	then2048
+	then
 		pvesh set /pools/"$pool" -vms "$1"
 	fi
 }
