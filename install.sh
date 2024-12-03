@@ -89,10 +89,6 @@ while [ $# -gt 0 ]; do
 		echo "Version: 1.0"
 	  	exit 0
 	  ;;
-    ?)
-      		echo "Invalid option: $1."
-      		exit 1
-      ;;
   esac
   shift
 done
