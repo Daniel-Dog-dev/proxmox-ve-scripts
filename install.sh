@@ -54,7 +54,7 @@ infoBanner()
    echo
 }
 
-while getopts "b:c:hl:m:s:k:v" opt; do
+while getopts "b:c:hl:m:s:v" opt; do
   case ${opt} in
 	b)
 		balloonmemory="${OPTARG}"
@@ -72,7 +72,6 @@ while getopts "b:c:hl:m:s:k:v" opt; do
 		echo "-l	Specify the Proxmox VE license key (Default: none)"
 		echo "-m	Specify the memory amount for the VM. (in MiB) (Default: 16384)"
 		echo "-s	Specify the VM disk location. (Default: auto detect)"
-		echo "-k	Specify a URL to get the authorized_keys file from for root user"
    		echo "-v	Print the script version."
 		exit 0
 	  ;;
@@ -84,9 +83,6 @@ while getopts "b:c:hl:m:s:k:v" opt; do
 	  ;;
 	s)
 	  	storagelocation="${OPTARG}"
-	  ;;
-	k)
-		pvesshkeyurl="${OPTARG}"
 	  ;;
 	v)
 		infoBanner
@@ -150,7 +146,7 @@ fi
 
 apt update
 apt -y dist-upgrade
-apt install -y figlet vim dnsmasq
+apt install -y figlet vim
 
 rm /etc/motd
 mv ./files/00-header /etc/update-motd.d/
@@ -187,15 +183,3 @@ chmod 755 /custom-scripts/backup_upload.sh
 
 /custom-scripts/create_templates.sh -b "$balloonmemory" -c "$vcores" -m "$memory" -s "$storagelocation"
 echo "0 5    * * *   root    /custom-scripts/create_templates.sh -b \"$balloonmemory\" -c \"$vcores\" -m \"$memory\" -s \"$storagelocation\" -q" >> /etc/crontab
-
-if [ "$pvesshkeysurl" != "" ];
-then
-	echo "URL for user \"root\" authorized_keys file is given."
-	
-	mv /root/.ssh/authorized_keys /root/.ssh/authorized_keys.old
-
-	echo "Downloading authorized_keys file..."
-	wget -q $pvesshkeysurl -O /root/.ssh/authorized_keys
-	echo "Downloaded authorized_keys file."
-	chmod 600 /root/.ssh/authorized_keys
-fi
