@@ -67,7 +67,7 @@ while [ $# -gt 0 ]; do
 		echo "Syntax: install.sh [-l|-s|-h|-v]"
    		echo "options:"
 		echo "--balloon | -b		Specify the minimum balloon memory. (in MiB) (Default: 4096)"
-		echo "--cores | -c		Specify the vcores assigned to the template VM. (Default: 4)"
+		echo "--vcores | -c		Specify the vcores assigned to the template VM. (Default: 4)"
 		echo "--help | -h		Print this help page."
 		echo "--license-key | -l	Specify the Proxmox VE license key (Default: none)"
 		echo "--memory | -m		Specify the memory amount for the VM. (in MiB) (Default: 16384)"
@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
 		memory="$2"
 	  ;;
 	--vm-disk-location | -s)
-	  	storagelocation="${OPTARG}"
+	  	storagelocation="$2"
 	  ;;
 	--version | -v)
 		infoBanner
