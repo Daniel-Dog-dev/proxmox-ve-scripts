@@ -89,7 +89,7 @@ createTemplate() {
 }
 
 infoBanner()
-{2048
+{
    echo "Copyright (c) 2023 realcryptonight"
    echo ""
    echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
