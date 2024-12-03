@@ -159,10 +159,6 @@ while [ $# -gt 0 ]; do
 	--quiet | -q)
 	  	verbose=false
 	  ;;
-	?)
-      		echo "Invalid option: $1."
-      		exit 1
-	  ;;
   esac
   shift
 done
