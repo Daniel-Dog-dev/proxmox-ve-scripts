@@ -139,7 +139,11 @@ fi
 
 apt update
 apt -y dist-upgrade
-apt install -y figlet vim
+apt install -y figlet vim fail2ban
+
+cp ./files/jail-proxmox.local /etc/fail2ban/jail.local
+cp ./files/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
+systemctl restart fail2ban
 
 rm /etc/motd
 mv ./files/00-header /etc/update-motd.d/
