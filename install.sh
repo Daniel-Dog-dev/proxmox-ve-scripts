@@ -22,9 +22,8 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
-pvelicense="none"
-storagelocation="auto"
-pvesshkeysurl=""
+pvelicense=""
+storagelocation=""
 
 vcores=4
 memory=16384
@@ -56,42 +55,56 @@ infoBanner()
 
 while [ $# -gt 0 ]; do
   case $1 in
-	--balloon | -b)
+	--balloon)
 		balloonmemory="$2"
 	  ;;
-	--vcores | -c)
+	--vcores)
 		vcores="$2"
 	  ;;
-	--help | h)
+	--help)
 		infoBanner
-		echo "Syntax: install.sh [-l|-s|-h|-v]"
+		echo "Syntax: install.sh [options]"
    		echo "options:"
-		echo "--balloon | -b		Specify the minimum balloon memory. (in MiB) (Default: 4096)"
-		echo "--vcores | -c		Specify the vcores assigned to the template VM. (Default: 4)"
-		echo "--help | -h		Print this help page."
-		echo "--license-key | -l	Specify the Proxmox VE license key (Default: none)"
-		echo "--memory | -m		Specify the memory amount for the VM. (in MiB) (Default: 16384)"
-		echo "--vm-disk-location | -s	Specify the VM disk location. (Default: auto detect)"
-   		echo "--version | -v		Print the script version."
+		echo "--balloon			Specify the minimum balloon memory. (in MiB) (Default: 4096)"
+		echo "--vcores			Specify the vcores assigned to the template VM. (Default: 4)"
+		echo "--help			Print this help page."
+		echo "--license-key		Specify a Proxmox VE license key (Required) (Use \"none\" for no license key)"
+		echo "--memory			Specify the memory amount for the VM. (in MiB) (Default: 16384)"
+		echo "--vm-disk-location	Specify the VM disk location. (Required)"
+   		echo "--version			Print the script version."
 		exit 0
 	  ;;
-	--license-key | -l)
+	--license-key)
 		pvelicense="$2"
 	  ;;
-	--memory | -m)
+	--memory)
 		memory="$2"
 	  ;;
-	--vm-disk-location | -s)
+	--vm-disk-location)
 	  	storagelocation="$2"
 	  ;;
-	--version | -v)
+	--version)
 		infoBanner
-		echo "Version: 1.0"
+		echo "Version: 1.1"
 	  	exit 0
 	  ;;
   esac
   shift
 done
+
+if [ -z "$pvelicense" ]; then
+	echo "No Proxmox VE license key provided."
+	echo "Use: install.sh --license-key <key>"
+	echo "Use \"none\" as key if you do not have a license key."
+	exit 1
+fi
+
+if [ -z "${storagelocation}" ]; then
+	echo "No storage location provided."
+	echo "Use: install.sh --vm-disk-location <location>"
+	echo "Use \"auto\" for automatic detection."
+	exit 1
+fi
 
 if [ "$pvelicense" == "none" ]; then
 	sed -i 's\deb \#deb \g' /etc/apt/sources.list.d/pve-enterprise.list
@@ -141,15 +154,15 @@ apt update
 apt -y dist-upgrade
 apt install -y figlet vim fail2ban
 
-cp ./files/jail-proxmox.local /etc/fail2ban/jail.local
-cp ./files/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
+cp ./files/Proxmox-VE/jail-proxmox.local /etc/fail2ban/jail.local
+cp ./files/Proxmox-VE/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
 systemctl restart fail2ban
 
 rm /etc/motd
-mv ./files/00-header /etc/update-motd.d/
-mv ./files/10-sysinfo /etc/update-motd.d/
-mv ./files/10-uname /etc/update-motd.d/
-mv ./files/90-footer /etc/update-motd.d/
+mv ./files/Standard/00-header /etc/update-motd.d/
+mv ./files/Standard/10-sysinfo /etc/update-motd.d/
+mv ./files/Standard/10-uname /etc/update-motd.d/
+mv ./files/Standard/90-footer /etc/update-motd.d/
 chmod 777 /etc/update-motd.d/*
 
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
@@ -169,12 +182,12 @@ while [ ! -d "/var/lib/vz/snippets" ]; do
     sleep 5s
 done
 
-mv ./snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
-mv ./snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
+mv ./files/Proxmox-VE/snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
+mv ./files/Proxmox-VE/snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
 
 mkdir /custom-scripts/
-mv ./custom-scripts/create_templates.sh /custom-scripts/create_templates.sh
-mv ./custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
+mv ./files/Proxmox-VE/custom-scripts/create_templates.sh /custom-scripts/create_templates.sh
+mv ./files/Proxmox-VE/custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 

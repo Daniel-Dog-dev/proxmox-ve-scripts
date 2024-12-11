@@ -32,8 +32,8 @@ scriptpath=$(dirname "$(realpath -s "$0")")
 forceupdate=false
 verbose=true
 
-storagelocation="local-lvm"
-snippetlocation="local"
+storagelocation=""
+snippetlocation=""
 
 networkbridge="vmbr0"
 
@@ -114,54 +114,70 @@ infoBanner()
 
 while [ $# -gt 0 ]; do
   case $1 in
-	--balloon | -b)
+	--balloon)
 		balloonmemory="$2"
 	  ;;
-	--vcores | -c)
+	--vcores)
 		vcores="$2"
 	  ;;
-	--help | -h)
+	--help)
 		infoBanner
-		echo "Syntax: create_template.sh [-b|-h|-v|-s|-f|-q]"
+		echo "Syntax: create_template.sh --[options]"
    		echo "options:"
-		echo "--balloon | -b		Specify the minimum balloon memory. (in MiB) (Default: 4096)"
-		echo "--vcores | -c		Specify the vcores assigned to the template VM. (Default: 4)"
-   		echo "--help | -h		Print this help page."
-		echo "--memory | -m		Specify the memory amount for the VM. (In MiB) (Default: 16384)"
-		echo "--network-bridge | -n	Specify the network bridge name for the VM network card. (Default: vmbr0)"
-		echo "--pool | -p		Specify the pool name that the VM should be in. (Default: none)"
-   		echo "--version | -v		Print the script version."
-   		echo "--vm-disk-location | -s	Specify the template storage name for the VM disks and Cloud-Init disks."
-   		echo "--force | -f		Force template update even if there is no image change."
-  		echo "--quiet | -q		Run script quietly."
+		echo "--balloon			Specify the minimum balloon memory. (in MiB) (Default: 4096)"
+		echo "--vcores			Specify the vcores assigned to the template VM. (Default: 4)"
+   		echo "--help			Print this help page."
+		echo "--memory			Specify the memory amount for the VM. (In MiB) (Default: 16384)"
+		echo "--network-bridge		Specify the network bridge name for the VM network card. (Default: vmbr0)"
+		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
+   		echo "--version			Print the script version."
+   		echo "--vm-disk-location	Specify the template storage name for the VM disks and Cloud-Init disks."
+		echo "--snippets-location	Specify the snippets storage name for the Cloud-Init configuration files."
+   		echo "--force			Force template update even if there is no image change."
+  		echo "--quiet			Run script quietly."
 		exit 0
 	  ;;
-	--memory | -m)
+	--memory)
 		memory="$2"
 	  ;;
-	--network-bridge | -n)
+	--network-bridge)
 		networkbridge="$2"
 	  ;;
-	--pool | -p)
+	--pool)
 		pool="$2"
 	  ;;
-	--version | -v)
+	--version)
 		infoBanner
-		echo "Version: 1.3"
+		echo "Version: 1.4"
 	  	exit 0
 	  ;;
-	--vm-disk-location | -s)
+	--vm-disk-location)
 	  	storagelocation="$2"
 	  ;;
-	--force | -f)
+	--snippets-location)
+		snippetlocation="$2"
+	  ;;
+	--force)
 	  	forceupdate=true
 	  ;;
-	--quiet | -q)
+	--quiet)
 	  	verbose=false
 	  ;;
   esac
   shift
 done
+
+if [ -z "$snippetlocation" ]; then
+	echo "No Snippets location provided."
+	echo "Use: install.sh --snippets-location <location>"
+	exit 1
+fi
+
+if [ -z "${storagelocation}" ]; then
+	echo "No storage location provided."
+	echo "Use: install.sh --vm-disk-location <location>"
+	exit 1
+fi
 
 if [ -f "/var/lock/vm-template-update.lck" ]; then
 	echo "Template update script is already running in a different instance. Exiting..."
@@ -222,7 +238,6 @@ fi
 
 createTemplate 900 "Debian-Bookworm-template" standard.yaml
 createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
-createTemplate 902 "Debian-Bookworm-SFTP-storage" sftp-storage.yaml
 
 if [ -f "$scriptpath/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
 	rm "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
