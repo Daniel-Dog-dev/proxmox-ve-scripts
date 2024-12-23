@@ -179,6 +179,24 @@ if [ -z "${storagelocation}" ]; then
 	exit 1
 fi
 
+if [ "$storagelocation" == "auto" ];
+then
+	if [ "$(pvesm scan zfs)" != "" ]; then
+        	storagelocation="local-zfs"
+	fi
+
+	if [ "$(pvesm scan lvm)" != "" ]; then
+        	storagelocation="local-lvm"
+	fi
+
+	if [ -z "$storagelocation" ]; then
+		echo "Failed to detect a storage location."
+		echo "Please rerun the create_templates script and specify the storage location."
+		echo "create_templates.sh --vm-disk-location <storage location>"
+		exit 1
+	fi
+fi
+
 if [ -f "/var/lock/vm-template-update.lck" ]; then
 	echo "Template update script is already running in a different instance. Exiting..."
 	exit 1
