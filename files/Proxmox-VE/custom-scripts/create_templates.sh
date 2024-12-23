@@ -2,7 +2,7 @@
 #	
 #	MIT License
 #	
-#	Copyright (c) 2023 realcryptonight
+#	Copyright (c) 2024 Daniel-Dog
 #	
 #	Permission is hereby granted, free of charge, to any person obtaining a copy
 #	of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ createTemplate() {
 
 infoBanner()
 {
-   echo "Copyright (c) 2023 realcryptonight"
+   echo "Copyright (c) 2024 Daniel-Dog"
    echo ""
    echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
    echo "of this software and associated documentation files (the \"Software\"), to deal"
@@ -124,15 +124,15 @@ while [ $# -gt 0 ]; do
 		infoBanner
 		echo "Syntax: create_template.sh --[options]"
    		echo "options:"
-		echo "--balloon			Specify the minimum balloon memory. (in MiB) (Default: 4096)"
 		echo "--vcores			Specify the vcores assigned to the template VM. (Default: 4)"
-   		echo "--help			Print this help page."
 		echo "--memory			Specify the memory amount for the VM. (In MiB) (Default: 16384)"
+		echo "--balloon			Specify the minimum balloon memory. (in MiB) (Default: 4096)"
 		echo "--network-bridge		Specify the network bridge name for the VM network card. (Default: vmbr0)"
+		echo "--vm-disk-location	Specify the template storage name for the VM disks and Cloud-Init disks. (Required) (Use \"auto\" for auto detect)"
+		echo "--snippets-location	Specify the snippets storage name for the Cloud-Init configuration files. (Required)"
 		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
-   		echo "--version			Print the script version."
-   		echo "--vm-disk-location	Specify the template storage name for the VM disks and Cloud-Init disks."
-		echo "--snippets-location	Specify the snippets storage name for the Cloud-Init configuration files."
+   		echo "--help			Print this help page."
+		echo "--version			Print the script version."
    		echo "--force			Force template update even if there is no image change."
   		echo "--quiet			Run script quietly."
 		exit 0
@@ -148,7 +148,7 @@ while [ $# -gt 0 ]; do
 	  ;;
 	--version)
 		infoBanner
-		echo "Version: 1.4"
+		echo "Version: 1.5"
 	  	exit 0
 	  ;;
 	--vm-disk-location)
@@ -169,13 +169,13 @@ done
 
 if [ -z "$snippetlocation" ]; then
 	echo "No Snippets location provided."
-	echo "Use: install.sh --snippets-location <location>"
+	echo "Use: create_templates.sh --snippets-location <location>"
 	exit 1
 fi
 
 if [ -z "${storagelocation}" ]; then
 	echo "No storage location provided."
-	echo "Use: install.sh --vm-disk-location <location>"
+	echo "Use: create_templates.sh --vm-disk-location <location>"
 	exit 1
 fi
 
@@ -184,7 +184,7 @@ if [ -f "/var/lock/vm-template-update.lck" ]; then
 	exit 1
 fi
 
-echo $$ > /var/lock/vm-template-update.lck
+echo "" > /var/lock/vm-template-update.lck
 
 if [ ! -d "$scriptpath/cache" ]; then
 	if $verbose ; then

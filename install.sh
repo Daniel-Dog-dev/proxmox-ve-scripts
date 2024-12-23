@@ -2,7 +2,7 @@
 #	
 #	MIT License
 #	
-#	Copyright (c) 2023 realcryptonight
+#	Copyright (c) 2024 Daniel-Dog
 #	
 #	Permission is hereby granted, free of charge, to any person obtaining a copy
 #	of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,21 @@
 #	SOFTWARE.
 
 pvelicense=""
+
 storagelocation=""
+snippetlocation=""
+
+networkbridge="vmbr0"
 
 vcores=4
 memory=16384
 balloonmemory=4096
 
+pool=""
+
 infoBanner()
 {
-   echo "Copyright (c) 2023 realcryptonight"
+   echo "Copyright (c) 2024 Daniel-Dog"
    echo ""
    echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
    echo "of this software and associated documentation files (the \"Software\"), to deal"
@@ -65,28 +71,40 @@ while [ $# -gt 0 ]; do
 		infoBanner
 		echo "Syntax: install.sh [options]"
    		echo "options:"
-		echo "--balloon			Specify the minimum balloon memory. (in MiB) (Default: 4096)"
-		echo "--vcores			Specify the vcores assigned to the template VM. (Default: 4)"
-		echo "--help			Print this help page."
 		echo "--license-key		Specify a Proxmox VE license key (Required) (Use \"none\" for no license key)"
-		echo "--memory			Specify the memory amount for the VM. (in MiB) (Default: 16384)"
-		echo "--vm-disk-location	Specify the VM disk location. (Required)"
-   		echo "--version			Print the script version."
-		exit 0
-	  ;;
-	--license-key)
-		pvelicense="$2"
+		echo "--vcores			Specify the vcores assigned to the template VM. (Default: 4)"
+		echo "--memory			Specify the memory amount for the VM. (In MiB) (Default: 16384)"
+		echo "--balloon			Specify the minimum balloon memory. (in MiB) (Default: 4096)"
+		echo "--network-bridge		Specify the network bridge name for the VM network card. (Default: vmbr0)"
+		echo "--vm-disk-location	Specify the template storage name for the VM disks and Cloud-Init disks. (Required) (Use \"auto\" for auto detect)"
+		echo "--snippets-location	Specify the snippets storage name for the Cloud-Init configuration files. (Required)"
+		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
+		echo "--help			Print this help page."
+		echo "--version			Print the script version."
+   		exit 0
 	  ;;
 	--memory)
 		memory="$2"
 	  ;;
-	--vm-disk-location)
-	  	storagelocation="$2"
+	--network-bridge)
+		networkbridge="$2"
+	  ;;
+	--pool)
+		pool="$2"
 	  ;;
 	--version)
 		infoBanner
-		echo "Version: 1.1"
+		echo "Version: 1.2"
 	  	exit 0
+	  ;;
+	--vm-disk-location)
+	  	storagelocation="$2"
+	  ;;
+	--snippets-location)
+		snippetlocation="$2"
+	  ;;
+	--license-key)
+		pvelicense="$2"
 	  ;;
   esac
   shift
@@ -104,6 +122,32 @@ if [ -z "${storagelocation}" ]; then
 	echo "Use: install.sh --vm-disk-location <location>"
 	echo "Use \"auto\" for automatic detection."
 	exit 1
+fi
+
+if [ -z "$snippetlocation" ]; then
+	echo "No Snippets location provided."
+	echo "Use: install.sh --snippets-location <location>"
+	exit 1
+fi
+
+if [ "$storagelocation" == "auto" ];
+then
+	if [ "$(pvesm scan zfs)" != "" ]; then
+        	storagelocation="local-zfs"
+	fi
+
+	if [ "$(pvesm scan lvm)" != "" ]; then
+        	storagelocation="local-lvm"
+	fi
+
+	if [ -z "$storagelocation" ]; then
+		echo "Failed to detect a storage location."
+		echo "Please rerun the install script and specify the storage location."
+		echo "install.sh --vm-disk-location <storage location>"
+		exit 1
+	else
+		echo "Detected \"$storagelocation\" as storage location."
+	fi
 fi
 
 if [ "$pvelicense" == "none" ]; then
@@ -134,20 +178,8 @@ else
                 echo "License is not (yet) active. Waiting 10 seconds..."
                 sleep 10s
         done
-	echo "Waiting 20 seconds for APT to get authentication data for Enterprise repository."
-	sleep 20s
-fi
-
-if [ "$storagelocation" == "auto" ];
-then
-	echo "For storage auto-detect is used."
-	if [ "$(pvesm scan lvm)" != "" ]; then
-		echo "auto-detect detected that a LVM is used."
-        	storagelocation="local-lvm"
-	else
-		echo "auto-detect detected that no LVM is used. Assuming ZFS."
-        	storagelocation="local-zfs"
-	fi
+	echo "Waiting 1 minute for APT to get the authentication data for the Enterprise repository."
+	sleep 60s
 fi
 
 apt update
@@ -191,5 +223,5 @@ mv ./files/Proxmox-VE/custom-scripts/backup_upload.sh /custom-scripts/backup_upl
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
-/custom-scripts/create_templates.sh --balloon "$balloonmemory" --vcores "$vcores" --memory "$memory" --vm-disk-location "$storagelocation"
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh --balloon \"$balloonmemory\" --vcores \"$vcores\" --memory \"$memory\" --vm-disk-location \"$storagelocation\" -q" >> /etc/crontab
+/custom-scripts/create_templates.sh --vcores "$vcores" --memory "$memory" --balloon "$balloonmemory" --network-bridge "$networkbridge" --vm-disk-location "$storagelocation" --snippets-location "$snippetlocation" --pool "$pool"
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" -q" >> /etc/crontab

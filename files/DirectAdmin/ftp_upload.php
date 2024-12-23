@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # DirectAdmin download script.
-# Modified by realcryptonight.
+# Modified by Daniel-Dog.
 
 RCLONE=/usr/bin/rclone
 MD5=${ftp_md5}

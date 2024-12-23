@@ -2,7 +2,7 @@
 #	
 #	MIT License
 #	
-#	Copyright (c) 2023 realcryptonight
+#	Copyright (c) 2024 Daniel-Dog
 #	
 #	Permission is hereby granted, free of charge, to any person obtaining a copy
 #	of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@ timezone: Europe/Berlin
 users:
   - name: admin
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFCwQAxhAzhs5mJ6SE4cDM9bvC9L73Aswgn716bl1Y+7 Yubico Yubikey - Primary
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEICIjb55CAyhGJo8dj+4KLAPeIwg2W3kpV4KgUvss29 Yubico Yubikey - Secondary
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ25G6ZCfNQh2PxOhrQIanl67ZAAA9evhuAHGDDkGedG Yubico Yubikey - Primary
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGI91xEYJ+z75R9rjc1ju4t2+4rJLy7eWkw61eQ7Xblp Yubico Yubikey - Secondary
     sudo:  ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
 
