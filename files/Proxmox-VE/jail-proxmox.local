@@ -1,0 +1,17 @@
+[DEFAULT]
+ignoreip = 127.0.0.1/8
+bantime = 1h
+bantime.increment = true
+bantime.factor = 24
+bantime.maxtime = 30d
+findtime = 2d
+maxretry = 3
+backend = systemd
+
+[sshd]
+enabled = true
+
+[proxmox]
+enabled = true
+port = https,http,8006
+filter = proxmox
