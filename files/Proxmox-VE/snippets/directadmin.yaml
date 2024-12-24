@@ -49,14 +49,14 @@ packages:
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
-  - git clone https://github.com/realcryptonight/debian-install-scripts.git
-  - cd debian-install-scripts/
-  - chmod 755 setup-standard.sh
-  - ./setup-standard.sh
-  - echo 'directadmin_setup_license_key=""' >> config.cnf
-  - echo 'directadmin_setup_admin_username=""' >> config.cnf
-  - echo 'directadmin_setup_headless_email=""' >> config.cnf
-  - chmod 755 setup-directadmin.sh
-  - ./setup-directadmin.sh
+  - git clone https://github.com/Daniel-Dog-dev/proxmox-ve-scripts.git
+  - cd proxmox-ve-scripts/
+  - chmod 755 ./files/Standard/install.sh
+  - chmod 755 ./files/DirectAdmin/install.sh
+  - echo 'directadmin_setup_license_key=""' >> ./files/DirectAdmin/config.cnf
+  - echo 'directadmin_setup_admin_username=""' >> ./files/DirectAdmin/config.cnf
+  - echo 'directadmin_setup_headless_email=""' >> ./files/DirectAdmin/config.cnf
+  - ./files/Standard/install.sh
+  - ./files/DirectAdmin/install.sh
   - cd ../
-  - rm -rf debian-install-scripts/
+  - rm -r proxmox-ve-scripts/
