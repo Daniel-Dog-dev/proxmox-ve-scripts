@@ -96,7 +96,7 @@ rm /root/install.log
 onetimelogin=`/usr/local/directadmin/directadmin --create-login-url user=$directadmin_setup_admin_username`
 
 echo "{\"hostname\" : \"$serverhostname\", \"login_url\" : \"$onetimelogin\", \"headless_email\" : \"$directadmin_setup_headless_email\"}" > "${installdir}/files/login.json"
-/usr/local/bin/php -f "${installdir}/files/mailer.php"
+/usr/local/bin/php -f "${installdir}/mailer.php"
 rm "${installdir}/files/login.json"
 
 exit 0
