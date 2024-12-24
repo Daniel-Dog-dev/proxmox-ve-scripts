@@ -202,7 +202,7 @@ if [ -f "/var/lock/vm-template-update.lck" ]; then
 	exit 1
 fi
 
-echo "" > /var/lock/vm-template-update.lck
+echo "PID: $$" > /var/lock/vm-template-update.lck
 
 if [ ! -d "$scriptpath/cache" ]; then
 	if $verbose ; then
