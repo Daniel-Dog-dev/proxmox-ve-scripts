@@ -10,10 +10,7 @@ if [ -z "$1" ]
 fi
 
 # Create a user with the home directory in the /backups folder.
-adduser --home /sftp-backups/$1 $1
-
-# Add the user to the sftpgroup group.
-usermod -G sftpbackup $1
+adduser --disabled-password --group sftpbackup --home /sftp-backups/$1 $1
 
 # Make the user and sftpgroup owner of the home directory.
 chown $1:sftpbackup /sftp-backups/$1/
