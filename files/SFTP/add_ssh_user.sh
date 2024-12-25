@@ -10,22 +10,22 @@ if [ -z "$1" ]
 fi
 
 # Create a user with the home directory in the /backups folder.
-adduser --home /backups/$1 $1
+adduser --home /sftp-backups/$1 $1
 
 # Add the user to the sftpgroup group.
 usermod -G sftpgroup $1
 
 # Make the user and sftpgroup owner of the home directory.
-chown $1:sftpgroup /backups/$1/
+chown $1:sftpgroup /sftp-backups/$1/
 
 # Make the home directory only accessible by the user.
-chmod 700 /backups/$1/
+chmod 700 /sftp-backups/$1/
 
 # Add the .ssh directory to the user home directory.
-mkdir /backups/$1/.ssh
+mkdir /sftp-backups/$1/.ssh
 
 # Make the user the only owner of the .ssh directory.
-chown $1:$1 /backups/$1/.ssh/
+chown $1:$1 /sftp-backups/$1/.ssh/
 
 # Make the .ssh directory only accessible by the user.
-chmod 700 /backups/$1/.ssh/
+chmod 700 /sftp-backups/$1/.ssh/

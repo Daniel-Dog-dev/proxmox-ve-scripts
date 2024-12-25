@@ -59,5 +59,6 @@ runcmd:
   - echo "  ForceCommand internal-sftp" >> /etc/ssh/sshd_config.d/sftpbackups.conf
   - systemctl restart sshd
   - cp ./files/SFTP/add_ssh_user.sh /root/
+  - chmod 755 /root/add_ssh_user.sh
   - cd ../
   - rm -r proxmox-ve-scripts/
