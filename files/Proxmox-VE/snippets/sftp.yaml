@@ -52,6 +52,7 @@ runcmd:
   - chmod 755 ./files/Standard/install.sh
   - ./files/Standard/install.sh
   - mkdir /sftp-backups/
+  - groupadd sftpbackup
   - echo "Match Group sftpbackup" >> /etc/ssh/sshd_config.d/sftpbackups.conf
   - echo "  X11Forwarding no" >> /etc/ssh/sshd_config.d/sftpbackups.conf
   - echo "  AllowTcpForwarding no" >> /etc/ssh/sshd_config.d/sftpbackups.conf

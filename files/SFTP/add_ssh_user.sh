@@ -13,10 +13,10 @@ fi
 adduser --home /sftp-backups/$1 $1
 
 # Add the user to the sftpgroup group.
-usermod -G sftpgroup $1
+usermod -G sftpbackup $1
 
 # Make the user and sftpgroup owner of the home directory.
-chown $1:sftpgroup /sftp-backups/$1/
+chown $1:sftpbackup /sftp-backups/$1/
 
 # Make the home directory only accessible by the user.
 chmod 700 /sftp-backups/$1/
