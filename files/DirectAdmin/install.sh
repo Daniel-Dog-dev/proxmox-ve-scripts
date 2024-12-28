@@ -1,7 +1,7 @@
 #!/bin/bash
 
 installdir=$(dirname "$(realpath -s "$0")")
-log_file="/root/install.log"
+log_file="${installdir}/install.log"
 
 # Check if the config file exist.
 if [ ! -f "${installdir}/config.cnf" ];
@@ -88,12 +88,8 @@ else
 fi
 
 usermod -aG sudo $directadmin_setup_admin_username
-cp /root/install.log /home/$directadmin_setup_admin_username/
-chown $directadmin_setup_admin_username:$directadmin_setup_admin_username /home/$directadmin_setup_admin_username/install.log
-chmod 600 /home/$directadmin_setup_admin_username/install.log
-rm /root/install.log
 
-onetimelogin=`/usr/local/directadmin/directadmin --create-login-url user=$directadmin_setup_admin_username`
+onetimelogin=`/usr/local/directadmin/directadmin login-url --user=$directadmin_setup_admin_username`
 
 echo "{\"hostname\" : \"$serverhostname\", \"login_url\" : \"$onetimelogin\", \"headless_email\" : \"$directadmin_setup_headless_email\"}" > "${installdir}/files/login.json"
 /usr/local/bin/php -f "${installdir}/mailer.php"
