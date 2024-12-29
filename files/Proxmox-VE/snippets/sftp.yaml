@@ -26,7 +26,13 @@ disable_root: true
 ssh_pwauth: false
 timezone: Europe/Berlin
 
-users: []
+users:
+  - name: admin
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ25G6ZCfNQh2PxOhrQIanl67ZAAA9evhuAHGDDkGedG Yubico Yubikey - Primary
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGI91xEYJ+z75R9rjc1ju4t2+4rJLy7eWkw61eQ7Xblp Yubico Yubikey - Secondary
+    sudo:  ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
 
 package_update: true
 package_upgrade: true
@@ -35,22 +41,25 @@ packages:
   - qemu-guest-agent
   - git
   - figlet
-  - curl
-  - dnsutils
-  - rclone
-  - zip
-  - unzip
+  - fail2ban
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
   - git clone https://github.com/Daniel-Dog-dev/proxmox-ve-scripts.git
   - cd proxmox-ve-scripts/
+  - mv ./files/Standard/jail-standard.local /etc/fail2ban/jail.local
+  - systemctl restart fail2ban
   - chmod 755 ./files/Standard/install.sh
-  - chmod 755 ./files/DirectAdmin/install.sh
-  - echo 'directadmin_setup_license_key=""' >> ./files/DirectAdmin/config.cnf
-  - echo 'directadmin_setup_admin_username=""' >> ./files/DirectAdmin/config.cnf
-  - echo 'directadmin_setup_headless_email=""' >> ./files/DirectAdmin/config.cnf
   - ./files/Standard/install.sh
-  - ./files/DirectAdmin/install.sh
+  - mkdir /sftp-backups/
+  - groupadd sftpbackup
+  - echo "Match Group sftpbackup" >> /etc/ssh/sshd_config.d/sftpbackups.conf
+  - echo "  X11Forwarding no" >> /etc/ssh/sshd_config.d/sftpbackups.conf
+  - echo "  AllowTcpForwarding no" >> /etc/ssh/sshd_config.d/sftpbackups.conf
+  - echo "  ChrootDirectory /sftp-backups" >> /etc/ssh/sshd_config.d/sftpbackups.conf
+  - echo "  ForceCommand internal-sftp" >> /etc/ssh/sshd_config.d/sftpbackups.conf
+  - systemctl restart sshd
+  - cp ./files/SFTP/add_ssh_user.sh /root/
+  - chmod 755 /root/add_ssh_user.sh
   - cd ../
   - rm -r proxmox-ve-scripts/
