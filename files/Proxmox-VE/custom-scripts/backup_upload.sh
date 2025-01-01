@@ -71,15 +71,15 @@ upload_file() {
 	for remote in "${rcloneremote[@]}"
 	do
 		echo "Uploading file: $(basename -- "$1")"
-		echo "Uploading to: $remote:/$(hostname)/$2/"
+		echo "Uploading to: $remote:$(hostname)/$2/"
 		
 		if [ -z $rclonebwlimit ]; then
-			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:/$(hostname)/$2 --progress --stats 30s
+			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:$(hostname)/$2 --progress --stats 30s
 			if [ $? -ne 0 ]; then
 				code=1
 			fi
 		else
-			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:/$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
+			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
 			if [ $? -ne 0 ]; then
 				code=1
 			fi
