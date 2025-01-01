@@ -92,7 +92,11 @@ usermod -aG sudo $directadmin_setup_admin_username
 onetimelogin=`/usr/local/directadmin/directadmin login-url --user=$directadmin_setup_admin_username`
 
 echo "{\"hostname\" : \"$serverhostname\", \"login_url\" : \"$onetimelogin\", \"headless_email\" : \"$directadmin_setup_headless_email\"}" > "${installdir}/login.json"
+cp "${log_file}" "/home/${directadmin_setup_admin_username}/install.log"
+chmod 644 "/home/${directadmin_setup_admin_username}/install.log"
+chown ${directadmin_setup_admin_username}:${directadmin_setup_admin_username} "/home/${directadmin_setup_admin_username}/install.log"
 /usr/local/bin/php -f "${installdir}/mailer.php"
 rm "${installdir}/login.json"
+rm "${log_file}"
 
 exit 0
