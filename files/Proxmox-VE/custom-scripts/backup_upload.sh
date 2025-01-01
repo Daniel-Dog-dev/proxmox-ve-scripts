@@ -112,7 +112,7 @@ remove_old() {
 	do
 		echo "Removing old backup(s) from: $remote:/$(hostname)/"
 		
-		/usr/bin/rclone --config /root/.config/rclone/rclone.conf delete $remote:/$(hostname)/ --min-age $backupage -v
+		/usr/bin/rclone --config /root/.config/rclone/rclone.conf delete $remote:$(hostname)/ --min-age $backupage -v
 		if [ $? -ne 0 ]; then
 			code=1
 		fi
