@@ -26,7 +26,7 @@ rcloneremote=("Proxmox-VE-Backup") # The name of the remote(s) target in the rcl
 backupage="7d" # How old backups files should be when they are deleted. (See: https://rclone.org/commands/rclone_delete/ --min-age)
 rclonebwlimit="" # Set an max upload speed for the backup upload or leave empty to not configure a upload speed limit. (See: https://rclone.org/docs/#bwlimit-bandwidth-spec)
 
-if [ $1 != "backup-end" ] && [ $1 != "log-end" ]; then
+if [ $1 != "log-end" ]; then
 	exit 0
 fi
 
@@ -122,29 +122,36 @@ remove_old() {
 	return $code
 }
 
-if [ $1 == "backup-end" ]; then
-	upload_file $TARGET $3
+upload_file $LOGFILE $3
+exitcodelog=$?
 
-	if [ $? -eq 0 ]; then
-		remove_old
-		exit $?
-	fi
-	
-	echo "Backup upload was not successfull."
-	echo "Backup age deletion is skipped for safety!"
-	exit 1
-fi
-
-if [ $1 == "log-end" ]; then
-	
-	upload_file $LOGFILE $3
-	
-	if [ $? -eq 0 ]; then
-		exit 0
-	fi
-	
+if [ $exitcodelog -ne 0 ]; then
 	echo "Backup log upload was not successfull!"
-	exit 1
+	exit 2
 fi
 
-exit 254
+upload_file "$TARGET.notes" $3
+exitcodenote=$?
+
+if [ $exitcodenote -ne 0 ]; then
+	echo "Backup notes upload was not successfull!"
+	exit 3
+fi
+
+upload_file $TARGET $3
+exitcodebackup=$?
+
+if [ $exitcodebackup -ne 0 ]; then
+	echo "Backup upload was not successfull."
+	exit 4
+fi
+
+remove_old
+exitremoveold=$?
+
+if [ $exitremoveold -ne 0 ]; then
+	echo "Backup upload was not successfull."
+	exit 5
+fi
+
+exit 0
