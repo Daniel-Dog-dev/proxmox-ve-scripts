@@ -74,6 +74,7 @@ upload_file() {
 		echo "Uploading to: $remote:$(hostname)/$2/"
 		
 		if [ -z $rclonebwlimit ]; then
+			echo "NOTICE: No bandwith limit is set for rclone. It is recommended to set a max bandwith limit to prevent rclone from using all the bandwith the node has."
 			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:$(hostname)/$2 --progress --stats 30s
 			if [ $? -ne 0 ]; then
 				code=1
