@@ -22,8 +22,8 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
-rcloneremote=("Proxmox-VE-Backup") # The name of the remote(s) target in the rclone config file. (Please ONLY USE CRYPT REMOTE(S)! If not then backups will be uploaded without encryption)
-backupage="7d" # How old backups files should be when they are deleted. (See: https://rclone.org/commands/rclone_delete/ --min-age)
+rcloneremote=("") # The name of the remote(s) target in the rclone config file. (Please ONLY USE CRYPT REMOTE(S)! If not then backups will be uploaded without encryption)
+backupage="" # How old backups files should be when they are deleted. (See: https://rclone.org/commands/rclone_delete/ --min-age)
 rclonebwlimit="" # Set an max upload speed for the backup upload or leave empty to not configure a upload speed limit. (See: https://rclone.org/docs/#bwlimit-bandwidth-spec)
 
 if [ $1 != "log-end" ]; then
