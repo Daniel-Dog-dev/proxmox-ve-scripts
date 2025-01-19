@@ -22,7 +22,7 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
-rcloneconfig="/root/.config/rclone/rcone.conf"
+rcloneconfig="/root/.config/rclone/rclone.conf"
 rcloneremote=("") # The name of the remote(s) target in the rclone config file. (Please ONLY USE CRYPT REMOTE(S)! If not then backups will be uploaded without encryption)
 rclonewarn=0.2 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will give a warning.
 rclonestop=0.1 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will not upload the backup and give a warning.
@@ -81,17 +81,17 @@ upload_file() {
 			continue
 		fi
 
-		rclonemaxsize=$($rclonesize | grep -o '"total":[^,\n]*' | grep -o '[^: ]*$')
-		rclonefreesize=$($rclonesize | grep -o '"free":[^,\n]*' | grep -o '[^: ]*$')
+		rclonemaxsize=$(echo $rclonesize | grep -o '"total":[^,\n]*' | grep -o '[0-9]*')
+		rclonefreesize=$(echo $rclonesize | grep -o '"free":[^,\n]*' | grep -o '[0-9]*')
 
-		if [ $rclonefreesize < $rclonemaxsize * $rclonestop ]; then
-			echo "Remote $remote has less then "$rclonestop * 100"% free space left. Not uploading backup."
+		if [ $rclonefreesize -lt $(( $rclonemaxsize * $rclonestop )) ]; then
+			echo "Remote $remote has less then $rclonestop% free space left. Not uploading backup."
 			code=1
 			continue
 		fi
 
-		if [ $rclonefreesize < $rclonemaxsize * $rclonewarn ]; then
-			echo "Remote $remote has less then "$rclonewarn * 100"% free space left."
+		if [ $rclonefreesize -lt $(( $rclonemaxsize * $rclonewarn )) ]; then
+			echo "Remote $remote has less then $rclonewarn% free space left."
 			code=1
 		fi
 		
