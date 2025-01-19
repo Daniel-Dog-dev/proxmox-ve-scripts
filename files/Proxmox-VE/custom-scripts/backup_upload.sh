@@ -24,8 +24,8 @@
 
 rcloneconfig="/root/.config/rclone/rclone.conf"
 rcloneremote=("") # The name of the remote(s) target in the rclone config file. (Please ONLY USE CRYPT REMOTE(S)! If not then backups will be uploaded without encryption)
-rclonewarn=0.2 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will give a warning.
-rclonestop=0.1 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will not upload the backup and give a warning.
+rclonewarn=20 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will give a warning.
+rclonestop=10 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will not upload the backup and give a warning.
 backupage="" # How old backups files should be when they are deleted. (See: https://rclone.org/commands/rclone_delete/ --min-age)
 rclonebwlimit="" # Set an max upload speed for the backup upload or leave empty to not configure a upload speed limit. (See: https://rclone.org/docs/#bwlimit-bandwidth-spec)
 
@@ -74,7 +74,7 @@ upload_file() {
 	for remote in "${rcloneremote[@]}"
 	do
 
-		rclonesize=$(/usr/bin/rclone --config $rcloneconfig about $remote --json)
+		rclonesize=$(/usr/bin/rclone --config $rcloneconfig about $remote: --json)
 		if [ $? -ne 0 ]; then
 			echo "Failed to get rclone remote info!"
 			code=1
