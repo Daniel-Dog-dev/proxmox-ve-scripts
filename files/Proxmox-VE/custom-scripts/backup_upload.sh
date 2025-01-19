@@ -22,7 +22,10 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
+rcloneconfig="/root/.config/rclone/rcone.conf"
 rcloneremote=("") # The name of the remote(s) target in the rclone config file. (Please ONLY USE CRYPT REMOTE(S)! If not then backups will be uploaded without encryption)
+rclonewarn=0.2 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will give a warning.
+rclonestop=0.1 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will not upload the backup and give a warning.
 backupage="" # How old backups files should be when they are deleted. (See: https://rclone.org/commands/rclone_delete/ --min-age)
 rclonebwlimit="" # Set an max upload speed for the backup upload or leave empty to not configure a upload speed limit. (See: https://rclone.org/docs/#bwlimit-bandwidth-spec)
 
@@ -70,17 +73,39 @@ upload_file() {
 
 	for remote in "${rcloneremote[@]}"
 	do
+
+		rclonesize=$(/usr/bin/rclone --config $rcloneconfig about $remote --json)
+		if [ $? -ne 0 ]; then
+			echo "Failed to get rclone remote info!"
+			code=1
+			continue
+		fi
+
+		rclonemaxsize=$($rclonesize | grep -o '"total":[^,\n]*' | grep -o '[^: ]*$')
+		rclonefreesize=$($rclonesize | grep -o '"free":[^,\n]*' | grep -o '[^: ]*$')
+
+		if [ $rclonefreesize < $rclonemaxsize * $rclonestop ]; then
+			echo "Remote $remote has less then "$rclonestop * 100"% free space left. Not uploading backup."
+			code=1
+			continue
+		fi
+
+		if [ $rclonefreesize < $rclonemaxsize * $rclonewarn ]; then
+			echo "Remote $remote has less then "$rclonewarn * 100"% free space left."
+			code=1
+		fi
+		
 		echo "Uploading file: $(basename -- "$1")"
 		echo "Uploading to: $remote:$(hostname)/$2/"
 		
 		if [ -z $rclonebwlimit ]; then
 			echo "NOTICE: No bandwith limit is set for rclone. It is recommended to set a max bandwith limit to prevent rclone from using all the bandwith the node has."
-			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:$(hostname)/$2 --progress --stats 30s
+			/usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --progress --stats 30s
 			if [ $? -ne 0 ]; then
 				code=1
 			fi
 		else
-			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
+			/usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
 			if [ $? -ne 0 ]; then
 				code=1
 			fi
@@ -113,7 +138,7 @@ remove_old() {
 	do
 		echo "Removing old backup(s) from: $remote:/$(hostname)/"
 		
-		/usr/bin/rclone --config /root/.config/rclone/rclone.conf delete $remote:$(hostname)/ --min-age $backupage -v
+		/usr/bin/rclone --config $rcloneconfig delete $remote:$(hostname)/ --min-age $backupage -v
 		if [ $? -ne 0 ]; then
 			code=1
 		fi
