@@ -138,9 +138,9 @@ remove_old() {
 
 	for remote in "${rcloneremote[@]}"
 	do
-		echo "Removing old backup(s) from: $remote:/$(hostname)/$2"
+		echo "Removing old backup(s) from: $remote:/$(hostname)/$1"
 		
-		/usr/bin/rclone --config $rcloneconfig delete $remote:$(hostname)/$2/ --min-age $backupage -v
+		/usr/bin/rclone --config $rcloneconfig delete $remote:$(hostname)/$1/ --min-age $backupage -v
 		if [ $? -ne 0 ]; then
 			code=1
 		fi
