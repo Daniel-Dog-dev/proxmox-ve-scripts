@@ -81,6 +81,12 @@ upload_file() {
 			continue
 		fi
 
+		if [ ! -f $1 ]; then
+			"File $1 does not exist! Skipping upload."
+			code=1
+			break
+	       	fi	       
+
 		rclonemaxsize=$(echo $rclonesize | grep -o '"total":[^,\n]*' | grep -o '[0-9]*')
 		rclonefreesize=$(echo $rclonesize | grep -o '"free":[^,\n]*' | grep -o '[0-9]*')
 		rcloneusedsize=$(echo $rclonesize | grep -o '"used:[^,\n]*"' | grep -o '[0-9]*')
