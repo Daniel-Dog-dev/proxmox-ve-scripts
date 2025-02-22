@@ -62,6 +62,11 @@ upload_file() {
 		echo "Please make sure the path + filename is provided as the first function argument."
 		return 1
 	fi
+
+	if [ ! -f $1 ]; then
+		echo "Backup file $1 does not exist."
+		echo "Cannot upload non existing file."
+		return 1
 	
 	if [ -z $2 ]; then
 		echo "No VM ID provided."
@@ -91,7 +96,7 @@ upload_file() {
 		rclonefreesize=$(echo $rclonesize | grep -o '"free":[^,\n]*' | grep -o '[0-9]*')
 		rcloneusedsize=$(echo $rclonesize | grep -o '"used:[^,\n]*"' | grep -o '[0-9]*')
 
-		echo "Minimum free / Used / Free space: $(( $rclonemaxsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB/$(( $rcloneusedsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB/$(( $rclonefreesize / 1024 / 1024 / 1024 ))GB"
+		echo "Used / Free space / Minimum free: $(( $rcloneusedsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB/$(( $rclonefreesize / 1024 / 1024 / 1024 ))GB/$(( $rclonemaxsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB"
 
 		if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonestop )) ]; then
 			echo "Remote $remote has less then $rclonestop% free space left. Not uploading backup."
