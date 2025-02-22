@@ -67,6 +67,7 @@ upload_file() {
 		echo "Backup file $1 does not exist."
 		echo "Cannot upload non existing file."
 		return 1
+	fi
 	
 	if [ -z $2 ]; then
 		echo "No VM ID provided."
