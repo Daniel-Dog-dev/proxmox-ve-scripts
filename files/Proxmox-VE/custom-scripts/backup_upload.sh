@@ -97,7 +97,7 @@ upload_file() {
 		rclonefreesize=$(echo $rclonesize | grep -o '"free":[^,\n]*' | grep -o '[0-9]*')
 		rcloneusedsize=$(echo $rclonesize | grep -o '"used:[^,\n]*"' | grep -o '[0-9]*')
 
-		echo "Used / Free space / Minimum free: $(( $rcloneusedsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB/$(( $rclonefreesize / 1024 / 1024 / 1024 ))GB/$(( $rclonemaxsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB"
+		echo "Used / Free space / Minimum free: $(( $rcloneusedsize / 1024 / 1024 / 1024 ))GB/$(( $rclonefreesize / 1024 / 1024 / 1024 ))GB/$(( $rclonemaxsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB"
 
 		if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonestop )) ]; then
 			echo "Remote $remote has less then $rclonestop% free space left. Not uploading backup."
