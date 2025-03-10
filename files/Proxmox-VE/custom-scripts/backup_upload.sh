@@ -22,11 +22,14 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
-rcloneremote=("Proxmox-VE-Backup") # The name of the remote(s) target in the rclone config file. (Please ONLY USE CRYPT REMOTE(S)! If not then backups will be uploaded without encryption)
-backupage="7d" # How old backups files should be when they are deleted. (See: https://rclone.org/commands/rclone_delete/ --min-age)
+rcloneconfig="/root/.config/rclone/rclone.conf"
+rcloneremote=("") # The name of the remote(s) target in the rclone config file. (Please ONLY USE CRYPT REMOTE(S)! If not then backups will be uploaded without encryption)
+rclonewarn=20 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will give a warning.
+rclonestop=10 # Set the minimum size free (in decimal precent) before a backup upload. If it is below then it will not upload the backup and give a warning.
+backupage="" # How old backups files should be when they are deleted. (See: https://rclone.org/commands/rclone_delete/ --min-age)
 rclonebwlimit="" # Set an max upload speed for the backup upload or leave empty to not configure a upload speed limit. (See: https://rclone.org/docs/#bwlimit-bandwidth-spec)
 
-if [ $1 != "backup-end" ] && [ $1 != "log-end" ]; then
+if [ $1 != "log-end" ]; then
 	exit 0
 fi
 
@@ -59,6 +62,12 @@ upload_file() {
 		echo "Please make sure the path + filename is provided as the first function argument."
 		return 1
 	fi
+
+	if [ ! -f $1 ]; then
+		echo "Backup file $1 does not exist."
+		echo "Cannot upload non existing file."
+		return 1
+	fi
 	
 	if [ -z $2 ]; then
 		echo "No VM ID provided."
@@ -70,16 +79,48 @@ upload_file() {
 
 	for remote in "${rcloneremote[@]}"
 	do
+
+		rclonesize=$(/usr/bin/rclone --config $rcloneconfig about $remote: --json)
+		if [ $? -ne 0 ]; then
+			echo "Failed to get rclone remote info!"
+			code=1
+			continue
+		fi
+
+		if [ ! -f $1 ]; then
+			"File $1 does not exist! Skipping upload."
+			code=1
+			break
+	       	fi	       
+
+		rclonemaxsize=$(echo $rclonesize | grep -o '"total":[^,\n]*' | grep -o '[0-9]*')
+		rclonefreesize=$(echo $rclonesize | grep -o '"free":[^,\n]*' | grep -o '[0-9]*')
+		rcloneusedsize=$(echo $rclonesize | grep -o '"used:[^,\n]*"' | grep -o '[0-9]*')
+
+		echo "Used / Free space / Minimum free: $(( $rcloneusedsize / 1024 / 1024 / 1024 ))GB/$(( $rclonefreesize / 1024 / 1024 / 1024 ))GB/$(( $rclonemaxsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB"
+
+		if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonestop )) ]; then
+			echo "Remote $remote has less then $rclonestop% free space left. Not uploading backup."
+			code=1
+			continue
+		fi
+
+		if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonewarn )) ]; then
+			echo "Remote $remote has less then $rclonewarn% free space left."
+			code=1
+		fi
+		
 		echo "Uploading file: $(basename -- "$1")"
 		echo "Uploading to: $remote:$(hostname)/$2/"
 		
 		if [ -z $rclonebwlimit ]; then
-			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:$(hostname)/$2 --progress --stats 30s
+			echo "NOTICE: No bandwith limit is set for rclone. It is recommended to set a max bandwith limit to prevent rclone from using all the bandwith the node has."
+			/usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --progress --stats 30s
 			if [ $? -ne 0 ]; then
 				code=1
 			fi
 		else
-			/usr/bin/rclone --config /root/.config/rclone/rclone.conf copy $1 $remote:$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
+			/usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
 			if [ $? -ne 0 ]; then
 				code=1
 			fi
@@ -110,9 +151,9 @@ remove_old() {
 
 	for remote in "${rcloneremote[@]}"
 	do
-		echo "Removing old backup(s) from: $remote:/$(hostname)/"
+		echo "Removing old backup(s) from: $remote:/$(hostname)/$1"
 		
-		/usr/bin/rclone --config /root/.config/rclone/rclone.conf delete $remote:$(hostname)/ --min-age $backupage -v
+		/usr/bin/rclone --config $rcloneconfig delete $remote:$(hostname)/$1/ --min-age $backupage -v
 		if [ $? -ne 0 ]; then
 			code=1
 		fi
@@ -122,29 +163,36 @@ remove_old() {
 	return $code
 }
 
-if [ $1 == "backup-end" ]; then
-	upload_file $TARGET $3
+upload_file $LOGFILE $3
+exitcodelog=$?
 
-	if [ $? -eq 0 ]; then
-		remove_old
-		exit $?
-	fi
-	
-	echo "Backup upload was not successfull."
-	echo "Backup age deletion is skipped for safety!"
-	exit 1
-fi
-
-if [ $1 == "log-end" ]; then
-	
-	upload_file $LOGFILE $3
-	
-	if [ $? -eq 0 ]; then
-		exit 0
-	fi
-	
+if [ $exitcodelog -ne 0 ]; then
 	echo "Backup log upload was not successfull!"
-	exit 1
+	exit 2
 fi
 
-exit 254
+upload_file "$TARGET.notes" $3
+exitcodenote=$?
+
+if [ $exitcodenote -ne 0 ]; then
+	echo "Backup notes upload was not successfull!"
+	exit 3
+fi
+
+upload_file $TARGET $3
+exitcodebackup=$?
+
+if [ $exitcodebackup -ne 0 ]; then
+	echo "Backup upload was not successfull."
+	exit 4
+fi
+
+remove_old $3
+exitremoveold=$?
+
+if [ $exitremoveold -ne 0 ]; then
+	echo "Backup upload was not successfull."
+	exit 5
+fi
+
+exit 0

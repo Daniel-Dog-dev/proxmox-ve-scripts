@@ -53,3 +53,4 @@ runcmd:
   - ./files/Standard/install.sh
   - cd ../
   - rm -r proxmox-ve-scripts/
+  - touch /etc/cloud/cloud-init.disabled
