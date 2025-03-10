@@ -63,3 +63,4 @@ runcmd:
   - chmod 755 /root/add_ssh_user.sh
   - cd ../
   - rm -r proxmox-ve-scripts/
+  - touch /etc/cloud/cloud-init.disabled
