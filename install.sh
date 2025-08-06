@@ -165,7 +165,7 @@ if [ "$pvelicense" == "none" ]; then
 	echo "Suites: trixie" >> /etc/apt/sources.list.d/ceph.list
 	echo "Components: no-subscription" >> /etc/apt/sources.list.d/ceph.list
 	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/ceph.list
-	
+
 else
 	if [[ ! "$pvelicense" =~ \s*pve([1248])([cbsp])-([0-9a-f]){10}\s* ]];
 	then
@@ -189,20 +189,13 @@ else
 	sleep 60s
 fi
 
-apt update
-apt -y dist-upgrade
-apt install -y figlet vim fail2ban
+apt-get update
+apt-get -y dist-upgrade
+apt-get install -y vim fail2ban sudo
 
 cp ./files/Proxmox-VE/jail-proxmox.local /etc/fail2ban/jail.local
 cp ./files/Proxmox-VE/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
 systemctl restart fail2ban
-
-rm /etc/motd
-mv ./files/Standard/00-header /etc/update-motd.d/
-mv ./files/Standard/10-sysinfo /etc/update-motd.d/
-mv ./files/Standard/10-uname /etc/update-motd.d/
-mv ./files/Standard/90-footer /etc/update-motd.d/
-chmod 777 /etc/update-motd.d/*
 
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
 sed -i 's/PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
