@@ -56,7 +56,7 @@ infoBanner()
    echo "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,"
    echo "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE"
    echo "SOFTWARE."
-   echo
+   echo 
 }
 
 while [ $# -gt 0 ]; do
@@ -151,20 +151,20 @@ then
 fi
 
 if [ "$pvelicense" == "none" ]; then
-	echo "Enabled: false" >> /etc/apt/sources.list.d/pve-enterprise.list
-	echo "Types: deb" >> /etc/apt/sources.list.d/proxmox.sources
-	echo "URIs: http://download.proxmox.com/debian/pve" >> /etc/apt/sources.list.d/proxmox.sources
-	echo "Suites: trixie" >> /etc/apt/sources.list.d/proxmox.sources
-	echo "Components: pve-no-subscription" >> /etc/apt/sources.list.d/proxmox.sources
-	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/proxmox.sources
+	sed -i -e "Enabled: false" /etc/apt/sources.list.d/pve-enterprise.list
+	sed -i -e "Types: deb" /etc/apt/sources.list.d/proxmox.sources
+	sed -i -e "URIs: http://download.proxmox.com/debian/pve" /etc/apt/sources.list.d/proxmox.sources
+	sed -i -e "Suites: trixie" /etc/apt/sources.list.d/proxmox.sources
+	sed -i -e "Components: pve-no-subscription" /etc/apt/sources.list.d/proxmox.sources
+	sed -i -e "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" /etc/apt/sources.list.d/proxmox.sources
 
-	echo "Enabled: false" >> /etc/apt/sources.list.d/ceph.list
-	echo "" >> /etc/apt/sources.list.d/ceph.list
-	echo "Types: deb" >> /etc/apt/sources.list.d/ceph.list
-	echo "URIs: http://download.proxmox.com/debian/ceph-squid" >> /etc/apt/sources.list.d/ceph.list
-	echo "Suites: trixie" >> /etc/apt/sources.list.d/ceph.list
-	echo "Components: no-subscription" >> /etc/apt/sources.list.d/ceph.list
-	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/ceph.list
+	sed -i -e "Enabled: false" /etc/apt/sources.list.d/ceph.list
+	sed -i -e "" /etc/apt/sources.list.d/ceph.list
+	sed -i -e "Types: deb" /etc/apt/sources.list.d/ceph.list
+	sed -i -e "URIs: http://download.proxmox.com/debian/ceph-squid" /etc/apt/sources.list.d/ceph.list
+	sed -i -e "Suites: trixie" /etc/apt/sources.list.d/ceph.list
+	sed -i -e "Components: no-subscription" /etc/apt/sources.list.d/ceph.list
+	sed -i -e "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" /etc/apt/sources.list.d/ceph.list
 
 else
 	if [[ ! "$pvelicense" =~ \s*pve([1248])([cbsp])-([0-9a-f]){10}\s* ]];
@@ -204,7 +204,7 @@ sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_
 service sshd restart
 
 serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
-echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
+sed -i -e "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" /etc/pve/datacenter.cfg
 
 pvesm set local --content snippets,iso,backup,vztmpl
 pvesm set $storagelocation --content images,rootdir
@@ -224,4 +224,4 @@ chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
 /custom-scripts/create_templates.sh --vcores "$vcores" --memory "$memory" --balloon "$balloonmemory" --network-bridge "$networkbridge" --vm-disk-location "$storagelocation" --snippets-location "$snippetlocation" --pool "$pool"
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" -quiet" >> /etc/crontab
+sed -i -e "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" -quiet" /etc/crontab
