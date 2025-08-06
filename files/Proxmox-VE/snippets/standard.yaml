@@ -2,7 +2,7 @@
 #	
 #	MIT License
 #	
-#	Copyright (c) 2024 Daniel-Dog
+#	Copyright (c) 2024 Daniel-Doggy
 #	
 #	Permission is hereby granted, free of charge, to any person obtaining a copy
 #	of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,6 @@ runcmd:
   - cd proxmox-ve-scripts/
   - mv ./files/Standard/jail-standard.local /etc/fail2ban/jail.local
   - systemctl restart fail2ban
-  - chmod 755 ./files/Standard/install.sh
-  - ./files/Standard/install.sh
   - cd ../
   - rm -r proxmox-ve-scripts/
   - touch /etc/cloud/cloud-init.disabled

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # DirectAdmin download script.
-# Created by Daniel-Dog.
+# Created by Daniel-Doggy.
 
 RCLONE=/usr/bin/rclone
 if [ ! -e ${RCLONE} ]; then

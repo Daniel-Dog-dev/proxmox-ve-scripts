@@ -2,7 +2,7 @@
 #	
 #	MIT License
 #	
-#	Copyright (c) 2024 Daniel-Dog
+#	Copyright (c) 2024 Daniel-Doggy
 #	
 #	Permission is hereby granted, free of charge, to any person obtaining a copy
 #	of this software and associated documentation files (the "Software"), to deal
@@ -45,12 +45,10 @@ runcmd:
   - systemctl start qemu-guest-agent
   - git clone https://github.com/Daniel-Dog-dev/proxmox-ve-scripts.git
   - cd proxmox-ve-scripts/
-  - chmod 755 ./files/Standard/install.sh
   - chmod 755 ./files/DirectAdmin/install.sh
   - echo 'directadmin_setup_license_key=""' >> ./files/DirectAdmin/config.cnf
   - echo 'directadmin_setup_admin_username=""' >> ./files/DirectAdmin/config.cnf
   - echo 'directadmin_setup_headless_email=""' >> ./files/DirectAdmin/config.cnf
-  - ./files/Standard/install.sh
   - ./files/DirectAdmin/install.sh
   - cd ../
   - rm -r proxmox-ve-scripts/

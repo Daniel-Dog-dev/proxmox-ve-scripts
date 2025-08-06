@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # DirectAdmin download script.
-# Modified by Daniel-Dog.
+# Modified by Daniel-Doggy.
 
 RCLONE=/usr/bin/rclone
 TMPDIR=/home/tmp
