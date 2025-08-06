@@ -151,20 +151,20 @@ then
 fi
 
 if [ "$pvelicense" == "none" ]; then
-	echo "Enabled: false" >> /etc/apt/sources.list.d/pve-enterprise.list
+	echo "Enabled: false" >> /etc/apt/sources.list.d/pve-enterprise.sources
 	echo "Types: deb" >> /etc/apt/sources.list.d/proxmox.sources
 	echo "URIs: http://download.proxmox.com/debian/pve" >> /etc/apt/sources.list.d/proxmox.sources
 	echo "Suites: trixie" >> /etc/apt/sources.list.d/proxmox.sources
 	echo "Components: pve-no-subscription" >> /etc/apt/sources.list.d/proxmox.sources
 	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/proxmox.sources
 
-	echo "Enabled: false" >> /etc/apt/sources.list.d/ceph.list
-	echo "" >> /etc/apt/sources.list.d/ceph.list
-	echo "Types: deb" >> /etc/apt/sources.list.d/ceph.list
-	echo "URIs: http://download.proxmox.com/debian/ceph-squid" >> /etc/apt/sources.list.d/ceph.list
-	echo "Suites: trixie" >> /etc/apt/sources.list.d/ceph.list
-	echo "Components: no-subscription" >> /etc/apt/sources.list.d/ceph.list
-	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/ceph.list
+	echo "Enabled: false" >> /etc/apt/sources.list.d/ceph.sources
+	echo "" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Types: deb" >> /etc/apt/sources.list.d/ceph.sources
+	echo "URIs: http://download.proxmox.com/debian/ceph-squid" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Suites: trixie" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Components: no-subscription" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/ceph.sources
 
 else
 	if [[ ! "$pvelicense" =~ \s*pve([1248])([cbsp])-([0-9a-f]){10}\s* ]];
