@@ -30,7 +30,7 @@ backupage="" # How old backups files should be when they are deleted. (See: http
 rclonebwlimit="" # Set an max upload speed for the backup upload or leave empty to not configure a upload speed limit. (See: https://rclone.org/docs/#bwlimit-bandwidth-spec)
 
 if [ $1 != "log-end" ]; then
-	exit 0
+        exit 0
 fi
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
@@ -38,161 +38,155 @@ echo "Custom rclone backup upload script"
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 
 if [ ! -f "/usr/bin/rclone" ]; then
-	echo "Rclone is not installed!"
-	exit 1
+        echo "Rclone is not installed!"
+        exit 1
 fi
 
 if [ ! -f "/root/.config/rclone/rclone.conf" ]; then
-	echo "No rclone config configured!"
-	echo "Please make sure you have rclone remote(s) configured."
-	echo "And make sure the rclone config is at /root/.config/rclone/rclone.conf"
-	exit 1
+        echo "No rclone config configured!"
+        echo "Please make sure you have rclone remote(s) configured."
+        echo "And make sure the rclone config is at /root/.config/rclone/rclone.conf"
+        exit 1
 fi
 
 upload_file() {
 
-	if [ -z $rcloneremote ]; then
-		echo "No backup remote(s) configured."
-		echo "Please configure backup remote(s) in the 'rcloneremote' variable."
-		return 1
-	fi
-	
-	if [ -z $1 ]; then
-		echo "No backup file location provided."
-		echo "Please make sure the path + filename is provided as the first function argument."
-		return 1
-	fi
+        if [ -z $rcloneremote ]; then
+                echo "No backup remote(s) configured."
+                echo "Please configure backup remote(s) in the 'rcloneremote' variable."
+                return 1
+        fi
 
-	if [ ! -f $1 ]; then
-		echo "Backup file $1 does not exist."
-		echo "Cannot upload non existing file."
-		return 1
-	fi
-	
-	if [ -z $2 ]; then
-		echo "No VM ID provided."
-		echo "Please make sure the VM ID is provided as the second argument."
-		return 1
-	fi
+        if [ -z $1 ]; then
+                echo "No backup file location provided."
+                echo "Please make sure the path + filename is provided as the first function argument."
+                return 1
+        fi
 
-	code=0
+        if [ ! -f $1 ]; then
+                echo "Backup file $1 does not exist."
+                echo "Cannot upload non existing file."
+                return 1
+        fi
 
-	for remote in "${rcloneremote[@]}"
-	do
+        if [ -z $2 ]; then
+                echo "No VM ID provided."
+                echo "Please make sure the VM ID is provided as the second argument."
+                return 1
+        fi
 
-		rclonesize=$(/usr/bin/rclone --config $rcloneconfig about $remote: --json)
-		if [ $? -ne 0 ]; then
-			echo "Failed to get rclone remote info!"
-			code=1
-			continue
-		fi
+        code=0
 
-		if [ ! -f $1 ]; then
-			"File $1 does not exist! Skipping upload."
-			code=1
-			break
-	       	fi	       
+        for remote in "${rcloneremote[@]}"
+        do
 
-		rclonemaxsize=$(echo $rclonesize | grep -o '"total":[^,\n]*' | grep -o '[0-9]*')
-		rclonefreesize=$(echo $rclonesize | grep -o '"free":[^,\n]*' | grep -o '[0-9]*')
-		rcloneusedsize=$(echo $rclonesize | grep -o '"used:[^,\n]*"' | grep -o '[0-9]*')
+                rclonesize=$(/usr/bin/rclone --config $rcloneconfig about $remote: --json)
+                if [ $? -ne 0 ]; then
+                        echo "Failed to get rclone remote info!"
+                        code=1
+                        continue
+                fi
 
-		echo "Used / Free space / Minimum free: $(( $rcloneusedsize / 1024 / 1024 / 1024 ))GB/$(( $rclonefreesize / 1024 / 1024 / 1024 ))GB/$(( $rclonemaxsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB"
+                rclonemaxsize=$(echo $rclonesize | grep -o '"total":[^,\n]*' | grep -o '[0-9]*')
+                rclonefreesize=$(echo $rclonesize | grep -o '"free":[^,\n]*' | grep -o '[0-9]*')
+                rcloneusedsize=$(echo $rclonesize | grep -o '"used":[^,\n]*' | grep -o '[0-9]*')
 
-		if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonestop )) ]; then
-			echo "Remote $remote has less then $rclonestop% free space left. Not uploading backup."
-			code=1
-			continue
-		fi
+                echo "Used / Free space / Minimum free: $(( $rcloneusedsize / 1024 / 1024 / 1024 ))GB/$(( $rclonefreesize / 1024 / 1024 / 1024 ))GB/$(( $rclonemaxsize / 100 * $rclonestop / 1024 / 1024 / 1024 ))GB"
 
-		if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonewarn )) ]; then
-			echo "Remote $remote has less then $rclonewarn% free space left."
-			code=1
-		fi
-		
-		echo "Uploading file: $(basename -- "$1")"
-		echo "Uploading to: $remote:$(hostname)/$2/"
-		
-		if [ -z $rclonebwlimit ]; then
-			echo "NOTICE: No bandwith limit is set for rclone. It is recommended to set a max bandwith limit to prevent rclone from using all the bandwith the node has."
-			/usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --progress --stats 30s
-			if [ $? -ne 0 ]; then
-				code=1
-			fi
-		else
-			/usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
-			if [ $? -ne 0 ]; then
-				code=1
-			fi
-		fi
-		
-	done
-	
-	return $code
+                if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonestop )) ]; then
+                        echo "Remote $remote has less then $rclonestop% free space left. Not uploading backup."
+                        code=1
+                        continue
+                fi
+
+                if [ $rclonefreesize -lt $(( $rclonemaxsize / 100 * $rclonewarn )) ]; then
+                        echo "Remote $remote has less then $rclonewarn% free space left."
+                        code=1
+                fi
+
+                echo "Uploading file: $(basename -- "$1")"
+                echo "Uploading to: $remote:$(hostname)/$2/"
+
+                if [ -z $rclonebwlimit ]; then
+                        echo "NOTICE: No bandwith limit is set for rclone. It is recommended to set a max bandwith limit to prevent rclone from using all the bandwith the node has."
+                        /usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --progress --stats 30s
+                        if [ $? -ne 0 ]; then
+                                code=1
+                        fi
+                else
+                        /usr/bin/rclone --config $rcloneconfig copy $1 $remote:$(hostname)/$2 --bwlimit $rclonebwlimit --progress --stats 30s
+                        if [ $? -ne 0 ]; then
+                                code=1
+                        fi
+                fi
+
+        done
+
+        return $code
 }
 
 remove_old() {
-	
-	if [ -z $remote ]; then
-		echo "No backup remote(s) configured."
-		echo "Please configure backup remote(s) in the 'rcloneremote' variable."
-		return 1
-	fi
-	
-	if [ -z $backupage ]; then
-		echo "No backup deletion age set."
-		echo "Skipping backup age deletion."
-		return 0
-	fi
-	
-	echo "Removing backup files older then $backupage"
-	
-	code=0
 
-	for remote in "${rcloneremote[@]}"
-	do
-		echo "Removing old backup(s) from: $remote:/$(hostname)/$1"
-		
-		/usr/bin/rclone --config $rcloneconfig delete $remote:$(hostname)/$1/ --min-age $backupage -v
-		if [ $? -ne 0 ]; then
-			code=1
-		fi
-		
-	done
-	
-	return $code
+        if [ -z $remote ]; then
+                echo "No backup remote(s) configured."
+                echo "Please configure backup remote(s) in the 'rcloneremote' variable."
+                return 1
+        fi
+
+        if [ -z $backupage ]; then
+                echo "No backup deletion age set."
+                echo "Skipping backup age deletion."
+                return 0
+        fi
+
+        echo "Removing backup files older then $backupage"
+
+        code=0
+
+        for remote in "${rcloneremote[@]}"
+        do
+                echo "Removing old backup(s) from: $remote:/$(hostname)/$1/"
+
+                /usr/bin/rclone --config $rcloneconfig delete $remote:$(hostname)/$1/ --min-age $backupage -v
+                if [ $? -ne 0 ]; then
+                        code=1
+                fi
+
+        done
+
+        return $code
 }
 
 upload_file $LOGFILE $3
 exitcodelog=$?
 
 if [ $exitcodelog -ne 0 ]; then
-	echo "Backup log upload was not successfull!"
-	exit 2
+        echo "Backup log upload was not successfull!"
+        exit 2
 fi
 
 upload_file "$TARGET.notes" $3
 exitcodenote=$?
 
 if [ $exitcodenote -ne 0 ]; then
-	echo "Backup notes upload was not successfull!"
-	exit 3
+        echo "Backup notes upload was not successfull!"
+        exit 3
 fi
 
 upload_file $TARGET $3
 exitcodebackup=$?
 
 if [ $exitcodebackup -ne 0 ]; then
-	echo "Backup upload was not successfull."
-	exit 4
+        echo "Backup upload was not successfull."
+        exit 4
 fi
 
 remove_old $3
 exitremoveold=$?
 
 if [ $exitremoveold -ne 0 ]; then
-	echo "Backup upload was not successfull."
-	exit 5
+        echo "Backup upload was not successfull."
+        exit 5
 fi
 
 exit 0
