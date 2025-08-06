@@ -151,14 +151,21 @@ then
 fi
 
 if [ "$pvelicense" == "none" ]; then
-	sed -i 's\deb \#deb \g' /etc/apt/sources.list.d/pve-enterprise.list
-	sed -i 's\deb \#deb \g' /etc/apt/sources.list.d/ceph.list
-	echo "# Proxmox VE pve-no-subscription repository provided by proxmox.com," >> /etc/apt/sources.list.d/pve-no-subscription.list
-	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/pve-no-subscription.list
-	echo "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription" >> /etc/apt/sources.list.d/pve-no-subscription.list
-	echo "# Proxmox VE CEPH pve-no-subscription repository provided by proxmox.com," >> /etc/apt/sources.list.d/ceph-no-subscription.list
-	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/ceph-no-subscription.list
-	echo "deb http://download.proxmox.com/debian/ceph-quincy bookworm no-subscription" >> /etc/apt/sources.list.d/ceph-no-subscription.list
+	echo "Enabled: false" >> /etc/apt/sources.list.d/pve-enterprise.list
+	echo "Types: deb" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "URIs: http://download.proxmox.com/debian/pve" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "Suites: trixie" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "Components: pve-no-subscription" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/proxmox.sources
+
+	echo "Enabled: false" >> /etc/apt/sources.list.d/ceph.list
+	echo "" >> /etc/apt/sources.list.d/ceph.list
+	echo "Types: deb" >> /etc/apt/sources.list.d/ceph.list
+	echo "URIs: http://download.proxmox.com/debian/ceph-squid" >> /etc/apt/sources.list.d/ceph.list
+	echo "Suites: trixie" >> /etc/apt/sources.list.d/ceph.list
+	echo "Components: no-subscription" >> /etc/apt/sources.list.d/ceph.list
+	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/ceph.list
+	
 else
 	if [[ ! "$pvelicense" =~ \s*pve([1248])([cbsp])-([0-9a-f]){10}\s* ]];
 	then
