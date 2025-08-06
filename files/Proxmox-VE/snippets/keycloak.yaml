@@ -41,6 +41,8 @@ packages:
   - qemu-guest-agent
   - git
   - fail2ban
+  - dnsutils
+  - certbot
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
@@ -48,6 +50,7 @@ runcmd:
   - cd proxmox-ve-scripts/
   - mv ./files/Standard/jail-standard.local /etc/fail2ban/jail.local
   - systemctl restart fail2ban
+  - chmod 755 ./files/Keycloak/install.sh
+  - ./files/Keycloak/install.sh
   - cd ../
-  - rm -r proxmox-ve-scripts/
   - touch /etc/cloud/cloud-init.disabled
