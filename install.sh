@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
 		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
 		echo "--help			Print this help page."
 		echo "--version			Print the script version."
-		echo "--hpe-repo		Add the HPE repository."
+		echo "--hpe-repo		Add the HPE repository. (Use \"yes\" to add HPE repo)"
    		exit 0
 	  ;;
 	--memory)
@@ -194,7 +194,7 @@ else
 	sleep 60s
 fi
 
-if [ ! -z "$hpe" ]; then
+if [ "$hpe" == "yes" ]; then
 	curl -sS https://downloads.linux.hpe.com/SDR/hpPublicKey2048.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/hpPublicKey2048.gpg
 	curl -sS https://downloads.linux.hpe.com/SDR/hpPublicKey2048_key1.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/hpPublicKey2048_key1.gpg
 	curl -sS https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/hpePublicKey2048_key1.gpg
