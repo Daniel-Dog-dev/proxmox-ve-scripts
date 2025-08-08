@@ -259,13 +259,13 @@ echo "PID: $$" > /var/lock/vm-template-update.lck
 cacheDebianFiles "trixie" 13
 cacheDebianFiles "bookworm" 12
 
+createTemplate 900 "bookworm" "Debian-bookworm-template" standard.yaml
+createTemplate 901 "bookworm" "Debian-bookworm-DirectAdmin-template" directadmin.yaml
+createTemplate 902 "bookworm" "Debian-bookworm-Desktop" debian-desktop.yaml
+
 createTemplate 910 "trixie" "Debian-trixie-template" standard.yaml
 createTemplate 911 "trixie" "Debian-trixie-DirectAdmin-template" directadmin.yaml
 createTemplate 912 "trixie" "Debian-trixie-Desktop" debian-desktop.yaml
 createTemplate 913 "trixie" "Debian-trixie-Keycloak" keycloak.yaml
-
-createTemplate 900 "bookworm" "Debian-bookworm-template" standard.yaml
-createTemplate 901 "bookworm" "Debian-bookworm-DirectAdmin-template" directadmin.yaml
-createTemplate 902 "bookworm" "Debian-bookworm-Desktop" debian-desktop.yaml
 
 rm /var/lock/vm-template-update.lck
