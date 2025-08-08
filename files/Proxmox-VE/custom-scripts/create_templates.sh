@@ -253,7 +253,7 @@ fi
 createTemplate 900 "Debian-Bookworm-template" standard.yaml
 createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
 createTemplate 902 "Debian-Bookworm-Desktop" debian-desktop.yaml
-createTemplate 903 "Debian-BOokworm-Keycloak" keycloak.yaml
+createTemplate 903 "Debian-Bookworm-Keycloak" keycloak.yaml
 
 if [ -f "$scriptpath/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
         rm "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt

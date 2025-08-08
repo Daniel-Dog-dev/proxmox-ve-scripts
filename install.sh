@@ -195,13 +195,19 @@ else
 fi
 
 if [ "$hpe" == "yes" ]; then
-	curl -sS https://downloads.linux.hpe.com/SDR/hpPublicKey2048.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/hpPublicKey2048.gpg
-	curl -sS https://downloads.linux.hpe.com/SDR/hpPublicKey2048_key1.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/hpPublicKey2048_key1.gpg
-	curl -sS https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub | gpg --dearmor > /etc/apt/trusted.gpg.d/hpePublicKey2048_key1.gpg
+	curl -sS https://downloads.linux.hpe.com/SDR/hpPublicKey2048.pub | gpg --dearmor > /etc/apt/sources.list.d/hpPublicKey2048.gpg
+	curl -sS https://downloads.linux.hpe.com/SDR/hpPublicKey2048_key1.pub | gpg --dearmor > /etc/apt/sources.list.d/hpPublicKey2048_key1.gpg
+	curl -sS https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub | gpg --dearmor > /etc/apt/sources.list.d/hpePublicKey2048_key1.gpg
+
+	curl https://downloads.linux.hpe.com/SDR/hpPublicKey2048_key1.pub | gpg --dearmor | tee -a /etc/apt/sources.list.d/hpePublicKey.gpg > /dev/null
+	curl https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub | gpg --dearmor | tee -a /etc/apt/sources.list.d/hpePublicKey.gpg > /dev/null
+	curl https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key2.pub | gpg --dearmor | tee -a /etc/apt/sources.list.d/hpePublicKey.gpg > /dev/null
+
 	echo "Types: deb" >> /etc/apt/sources.list.d/hpe.sources
 	echo "URIs: https://downloads.linux.hpe.com/SDR/repo/mcp" >> /etc/apt/sources.list.d/hpe.sources
 	echo "Suites: bookworm/current" >> /etc/apt/sources.list.d/hpe.sources
 	echo "Components: non-free" >> /etc/apt/sources.list.d/hpe.sources
+	echo "Signed-By: /etc/apt/sources.list.d/hpePublicKey.gpg" >> /etc/apt/sources.list.d/hpe.sources
 fi
 
 apt-get update
