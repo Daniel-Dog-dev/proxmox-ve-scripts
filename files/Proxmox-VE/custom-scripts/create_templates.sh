@@ -111,7 +111,7 @@ cacheDebianFiles(){
                                 echo "The cached Debian $1 image seems to be old. Removing old cached Debian $1 image."
                         fi
 
-                        rm "$scriptpath"/cache/debian-12-genericcloud-amd64.qcow2
+                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
 
                         if $verbose ; then
                                 echo "Removed old cached Debian $1 image."
