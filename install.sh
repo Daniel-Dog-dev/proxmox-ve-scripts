@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
 		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
 		echo "--help			Print this help page."
 		echo "--version			Print the script version."
-		echo "--hpe		Add the HPE repository and install HPE Agent. (Use \"yes\" to add HPE repo and install HPE Agent)"
+		echo "--hpe		Add the HPE repository. (Use \"yes\" to add HPE repo)"
    		exit 0
 	  ;;
 	--memory)
@@ -202,17 +202,15 @@ if [ "$hpe" == "yes" ]; then
 
 	echo "Types: deb" >> /etc/apt/sources.list.d/hpe.sources
 	echo "URIs: https://downloads.linux.hpe.com/SDR/repo/mcp" >> /etc/apt/sources.list.d/hpe.sources
-	echo "Suites: bookworm/current" >> /etc/apt/sources.list.d/hpe.sources
+	echo "Suites: trixie/current" >> /etc/apt/sources.list.d/hpe.sources
 	echo "Components: non-free" >> /etc/apt/sources.list.d/hpe.sources
 	echo "Signed-By: /usr/share/keyrings/hpePublicKey.gpg" >> /etc/apt/sources.list.d/hpe.sources
+	echo "Enabled: false" >> /etc/apt/sources.list.d/hpe.sources
 fi
 
 apt-get update
 apt-get -y dist-upgrade
 apt-get install -y vim fail2ban sudo
-if [ "$hpe" == "yes" ]; then
-	apt-get install ssa ssacli ssaducli storcli amsd
-fi
 
 cp ./files/Proxmox-VE/jail-proxmox.local /etc/fail2ban/jail.local
 cp ./files/Proxmox-VE/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
