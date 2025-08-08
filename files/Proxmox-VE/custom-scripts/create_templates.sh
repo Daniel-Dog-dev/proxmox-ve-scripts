@@ -127,15 +127,15 @@ cacheDebianFiles(){
                 fi
         fi
 
-        if [ ! -f "$scriptpath/cache/debian-12-genericcloud-amd64.qcow2" ]; then
+        if [ ! -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
                 if $verbose ; then
-                        echo "Downloading lastest Debian $1 image."
+                        echo "Downloading lastest Debian $2 $1 image."
                 fi
 
-                wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-12-genericcloud-amd64.qcow2" -O "$scriptpath"/cache/debian-12-genericcloud-amd64.qcow2
+                wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-$2-genericcloud-amd64.qcow2" -O "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
 
                 if $verbose ; then
-                        echo "Downloaded lastest Debian $1 image."
+                        echo "Downloaded lastest Debian $2 $1 image."
                 fi
         fi
 }
@@ -256,8 +256,8 @@ fi
 
 echo "PID: $$" > /var/lock/vm-template-update.lck
 
-cacheDebianFiles "bookworm"
-cacheDebianFiles "buster"
+cacheDebianFiles "bookworm" 12
+cacheDebianFiles "buster" 11
 
 createTemplate 900 "bookworm" "Debian-bookworm-template" standard.yaml
 createTemplate 901 "bookworm" "Debian-bookworm-DirectAdmin-template" directadmin.yaml
