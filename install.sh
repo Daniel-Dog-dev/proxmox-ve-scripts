@@ -108,7 +108,7 @@ while [ $# -gt 0 ]; do
 	--license-key)
 		pvelicense="$2"
 	  ;;
-	--hpe-repo)
+	--hpe)
 		hpe="$2"
 
   esac
