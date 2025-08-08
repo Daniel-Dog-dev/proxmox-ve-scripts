@@ -64,24 +64,80 @@ createTemplate() {
 		fi
 	fi
 
-	qm create "$1" --name "$2" --ostype l26
+	qm create "$1" --name "$3" --ostype l26
 	qm set "$1" --net0 virtio,bridge="$networkbridge"
 	qm set "$1" --serial0 socket --vga serial0
 	qm set "$1" --memory "$memory" --cores "$vcores" --cpu host
 	qm set "$1" --balloon "$balloonmemory"
-	qm set "$1" --scsi0 "$storagelocation":0,import-from="$scriptpath/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
+	qm set "$1" --scsi0 "$storagelocation":0,import-from="$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2",discard=on,ssd=1
 	qm set "$1" --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set "$1" --onboot 1
 	qm set "$1" --agent enabled=1,fstrim_cloned_disks=1
 	qm set "$1" --ide2 "$storagelocation":cloudinit
 	qm set "$1" --ipconfig0 ip=dhcp,ip6=dhcp
-	qm set "$1" --cicustom "user=$snippetlocation:snippets/$3"
+	qm set "$1" --cicustom "user=$snippetlocation:snippets/$4"
 	qm disk resize "$1" scsi0 50G
 	qm template "$1"
 	if [ -n "$pool" ];
 	then
-			pvesh set /pools/"$pool" -vms "$1"
+		pvesh set /pools/"$pool" -vms "$1"
 	fi
+}
+
+cacheDebianFiles(){
+        if [ ! -d "$scriptpath/cache" ]; then
+                if $verbose ; then
+                        echo "No cache directory found. Creating cache directory."
+                fi
+
+                mkdir "$scriptpath"/cache/
+
+                if $verbose ; then
+                        echo "Created cache directory."
+                fi
+        fi
+
+        if [ -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
+                if $verbose ; then
+                        echo "Debian $1 image found in cache directory."
+                        echo "Checking if cached Debian $1 is still the latest version..."
+                fi
+
+                wget -q https://cloud.debian.org/images/cloud/$1/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+
+                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$1-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                then
+                        if $verbose ; then
+                                echo "The cached Debian $1 image seems to be old. Removing old cached Debian $1 image."
+                        fi
+
+                        rm "$scriptpath"/cache/debian-12-genericcloud-amd64.qcow2
+
+                        if $verbose ; then
+                                echo "Removed old cached Debian $1 image."
+                        fi
+                else
+                        if $verbose ; then
+                                echo "The cached Debian $1 image seems to be up-to-date. Skipping new image download."
+                        fi
+                fi
+
+                if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
+                        rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                fi
+        fi
+
+        if [ ! -f "$scriptpath/cache/debian-12-genericcloud-amd64.qcow2" ]; then
+                if $verbose ; then
+                        echo "Downloading lastest Debian $1 image."
+                fi
+
+                wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-12-genericcloud-amd64.qcow2" -O "$scriptpath"/cache/debian-12-genericcloud-amd64.qcow2
+
+                if $verbose ; then
+                        echo "Downloaded lastest Debian $1 image."
+                fi
+        fi
 }
 
 infoBanner()
@@ -200,62 +256,17 @@ fi
 
 echo "PID: $$" > /var/lock/vm-template-update.lck
 
-if [ ! -d "$scriptpath/cache" ]; then
-        if $verbose ; then
-                echo "No cache directory found. Creating cache directory."
-        fi
+cacheDebianFiles "bookworm"
+cacheDebianFiles "buster"
 
-        mkdir "$scriptpath"/cache/
+createTemplate 900 "bookworm" "Debian-bookworm-template" standard.yaml
+createTemplate 901 "bookworm" "Debian-bookworm-DirectAdmin-template" directadmin.yaml
+createTemplate 902 "bookworm" "Debian-bookworm-Desktop" debian-desktop.yaml
+createTemplate 903 "bookworm" "Debian-bookworm-Keycloak" keycloak.yaml
 
-        if $verbose ; then
-                echo "Created cache directory."
-        fi
-fi
+createTemplate 904 "buster" "Debian-buster-template" standard.yaml
+createTemplate 905 "buster" "Debian-buster-DirectAdmin-template" directadmin.yaml
+createTemplate 906 "buster" "Debian-buster-Desktop" debian-desktop.yaml
+createTemplate 907 "buster" "Debian-buster-Keycloak" keycloak.yaml
 
-if [ -f "$scriptpath/cache/debian-12-generic-amd64.qcow2" ]; then
-        if $verbose ; then
-                echo "Debian Bookworm image found in cache directory."
-                echo "Checking if cached Debian Bookworm is still the latest version..."
-        fi
-
-        wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
-
-        if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
-        then
-                if $verbose ; then
-                        echo "The cached Debian Bookworm image seems to be old. Removing old cached Debian Bookworm image."
-                fi
-
-                rm "$scriptpath"/cache/debian-12-generic-amd64.qcow2
-
-                if $verbose ; then
-                        echo "Removed old cached Debian Bookworm image."
-                fi
-        else
-                if $verbose ; then
-                        echo "The cached Debian Bookworm image seems to be up-to-date. Skipping new image download."
-                fi
-        fi
-fi
-
-if [ ! -f "$scriptpath/cache/debian-12-generic-amd64.qcow2" ]; then
-        if $verbose ; then
-                echo "Downloading lastest Debian Bookworm image."
-        fi
-
-        wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O "$scriptpath"/cache/debian-12-generic-amd64.qcow2
-
-        if $verbose ; then
-                echo "Downloaded lastest Debian Bookworm image."
-        fi
-fi
-
-createTemplate 900 "Debian-Bookworm-template" standard.yaml
-createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
-createTemplate 902 "Debian-Bookworm-Desktop" debian-desktop.yaml
-createTemplate 903 "Debian-Bookworm-Keycloak" keycloak.yaml
-
-if [ -f "$scriptpath/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
-        rm "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
-fi
 rm /var/lock/vm-template-update.lck
