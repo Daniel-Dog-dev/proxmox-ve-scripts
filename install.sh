@@ -82,7 +82,7 @@ while [ $# -gt 0 ]; do
 		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
 		echo "--help			Print this help page."
 		echo "--version			Print the script version."
-		echo "--hpe-repo		Add the HPE repository. (Use \"yes\" to add HPE repo)"
+		echo "--hpe		Add the HPE repository and install HPE Agent. (Use \"yes\" to add HPE repo and install HPE Agent)"
    		exit 0
 	  ;;
 	--memory)
@@ -210,6 +210,9 @@ fi
 apt-get update
 apt-get -y dist-upgrade
 apt-get install -y vim fail2ban sudo
+if [ "$hpe" == "yes" ]; then
+	apt-get install ssa ssacli ssaducli storcli amsd
+fi
 
 cp ./files/Proxmox-VE/jail-proxmox.local /etc/fail2ban/jail.local
 cp ./files/Proxmox-VE/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
