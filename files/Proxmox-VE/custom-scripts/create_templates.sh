@@ -257,7 +257,7 @@ fi
 echo "PID: $$" > /var/lock/vm-template-update.lck
 
 cacheDebianFiles "bookworm" 12
-cacheDebianFiles "buster" 11
+cacheDebianFiles "buster" 10
 
 createTemplate 900 "bookworm" "Debian-bookworm-template" standard.yaml
 createTemplate 901 "bookworm" "Debian-bookworm-DirectAdmin-template" directadmin.yaml
