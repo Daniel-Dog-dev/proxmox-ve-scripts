@@ -1,0 +1,7 @@
+[Unit]
+Description=AutoMount for /mnt/backups-remote
+[Automount]
+Where=/mnt/backups-remote
+TimeoutIdleSec=600
+[Install]
+WantedBy=multi-user.target

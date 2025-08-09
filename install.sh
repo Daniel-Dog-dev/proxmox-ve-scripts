@@ -22,6 +22,8 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
+scriptpath=$(dirname "$(realpath -s "$0")")
+
 pvelicense=""
 
 storagelocation=""
@@ -96,7 +98,7 @@ while [ $# -gt 0 ]; do
 	  ;;
 	--version)
 		infoBanner
-		echo "Version: 1.2"
+		echo "Version: 2.0"
 	  	exit 0
 	  ;;
 	--vm-disk-location)
@@ -212,8 +214,8 @@ apt-get update
 apt-get -y dist-upgrade
 apt-get install -y vim fail2ban sudo
 
-cp ./files/Proxmox-VE/jail-proxmox.local /etc/fail2ban/jail.local
-cp ./files/Proxmox-VE/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
+cp "$scriptpath/files/Proxmox-VE/jail-proxmox.local" /etc/fail2ban/jail.local
+cp "$scriptpath/files/Proxmox-VE/proxmox.conf" /etc/fail2ban/filter.d/proxmox.conf
 systemctl restart fail2ban
 
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
@@ -233,14 +235,28 @@ while [ ! -d "/var/lib/vz/snippets" ]; do
     sleep 5s
 done
 
-mv ./files/Proxmox-VE/snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
-mv ./files/Proxmox-VE/snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
+mv "$scriptpath/files/Proxmox-VE/snippets/standard.yaml" /var/lib/vz/snippets/standard.yaml
+mv "$scriptpath/files/Proxmox-VE/snippets/directadmin.yaml" /var/lib/vz/snippets/directadmin.yaml
 
 mkdir /custom-scripts/
-mv ./files/Proxmox-VE/custom-scripts/create_templates.sh /custom-scripts/create_templates.sh
-mv ./files/Proxmox-VE/custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
+mv "$scriptpath/files/Proxmox-VE/custom-scripts/create_templates.sh" /custom-scripts/create_templates.sh
+mv "$scriptpath/files/Proxmox-VE/custom-scripts/backup_upload.sh" /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
 /custom-scripts/create_templates.sh --vcores "$vcores" --memory "$memory" --balloon "$balloonmemory" --network-bridge "$networkbridge" --vm-disk-location "$storagelocation" --snippets-location "$snippetlocation" --pool "$pool"
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" -quiet" >> /etc/crontab
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" --quiet" >> /etc/crontab
+
+if [ -d "/root/.config/rclone" ]; then
+	if [ -f "/root/.config/rclone/rclone.conf" ]; then
+		apt-get install rclone
+		if [ ! -d "/mnt/pve/backups-remote" ]; then
+			mkdir /mnt/pve/backups-remote
+		fi
+		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.mount"
+		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.automount"
+		systemctl daemon-reload
+		systemctl enable "mnt-backups\\x2dremote.automount"
+		systemctl start "mnt-backups\\x2dremote.automount"
+	fi
+fi
