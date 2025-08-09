@@ -236,12 +236,11 @@ while [ ! -d "/var/lib/vz/snippets" ]; do
     sleep 5s
 done
 
-mv "$scriptpath/files/Proxmox-VE/snippets/standard.yaml" /var/lib/vz/snippets/standard.yaml
-mv "$scriptpath/files/Proxmox-VE/snippets/directadmin.yaml" /var/lib/vz/snippets/directadmin.yaml
+cp -a "$scriptpath/files/Proxmox-VE/snippets/." /var/lib/vz/snippets/
 
 mkdir /custom-scripts/
-mv "$scriptpath/files/Proxmox-VE/custom-scripts/create_templates.sh" /custom-scripts/create_templates.sh
-mv "$scriptpath/files/Proxmox-VE/custom-scripts/backup_upload.sh" /custom-scripts/backup_upload.sh
+cp "$scriptpath/files/Proxmox-VE/custom-scripts/create_templates.sh" /custom-scripts/create_templates.sh
+cp "$scriptpath/files/Proxmox-VE/custom-scripts/backup_upload.sh" /custom-scripts/backup_upload.sh
 chmod 755 /custom-scripts/create_templates.sh
 chmod 755 /custom-scripts/backup_upload.sh
 
