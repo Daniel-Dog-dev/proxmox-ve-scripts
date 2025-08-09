@@ -251,9 +251,6 @@ if [ -d "/root/.config/rclone" ]; then
 	if [ -f "/root/.config/rclone/rclone.conf" ]; then
 		apt-get install rclone
 		ln -s /usr/bin/rclone /sbin/mount.rclone
-		if [ ! -d "/mnt/pve/backups-remote" ]; then
-			mkdir /mnt/pve/backups-remote
-		fi
 		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.mount" /etc/systemd/system/
 		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.automount" /etc/systemd/system/
 		systemctl daemon-reload
