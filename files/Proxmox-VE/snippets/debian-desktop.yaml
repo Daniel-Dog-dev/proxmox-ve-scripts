@@ -44,6 +44,7 @@ packages:
   - git
   - fail2ban
   - gnome-core
+  - spice-vdagent
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
