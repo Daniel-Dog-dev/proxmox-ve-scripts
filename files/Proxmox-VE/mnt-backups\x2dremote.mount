@@ -4,4 +4,4 @@ Description=Mount for /mnt/backups-remote
 Type=rclone
 What=remote-backup-encrypt:
 Where=/mnt/backups-remote
-Options=rw,_netdev,allow_other,args2env,vfs-cache-mode=writes,config=/root/.config/rclone/rclone.conf,cache-dir=/mnt/pve/backups-remote,vv
+Options=rw,_netdev,allow_other,args2env,vfs-cache-mode=writes,config=/root/.config/rclone/rclone.conf,vv
