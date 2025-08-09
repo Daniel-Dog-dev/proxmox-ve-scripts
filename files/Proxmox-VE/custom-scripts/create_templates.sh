@@ -44,6 +44,14 @@ balloonmemory=4096
 pool=""
 
 createTemplate() {
+
+        if [ ! -f "$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2" ]; then
+                if $verbose ; then
+                        echo "Image file for $3 does not exists!"
+                fi
+                return
+        fi
+
 	pvesh get /cluster/resources --type vm --output-format yaml | grep -E -i 'vmid' > "$scriptpath"/cache/vmidcheck.txt
 
 	if grep -q "vmid: $1" "$scriptpath/cache/vmidcheck.txt" ; then
@@ -121,10 +129,6 @@ cacheDebianFiles(){
                                 echo "The cached Debian $1 image seems to be up-to-date. Skipping new image download."
                         fi
                 fi
-
-                if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
-                        rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
-                fi
         fi
 
         if [ ! -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
@@ -136,7 +140,20 @@ cacheDebianFiles(){
 
                 if $verbose ; then
                         echo "Downloaded lastest Debian $2 $1 image."
+                        echo "Verifying downloaded image."
                 fi
+
+                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                then
+                        echo "Failed to verify image. (sha512sum did not matched!)"
+                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+                else
+                        echo "Verified downloaded image."
+                fi
+        fi
+
+        if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
+                rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
         fi
 }
 
