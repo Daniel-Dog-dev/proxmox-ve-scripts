@@ -130,6 +130,10 @@ cacheDebianFiles(){
                                 echo "The cached Debian $1 image seems to be up-to-date. Skipping new image download."
                         fi
                 fi
+
+                if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
+                        rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                fi
         fi
 
         if [ ! -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
@@ -138,24 +142,11 @@ cacheDebianFiles(){
                 fi
 
                 wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-$2-genericcloud-amd64.qcow2" -O "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+                hasupdates=true
 
                 if $verbose ; then
                         echo "Downloaded lastest Debian $2 $1 image."
-                        echo "Verifying downloaded image."
                 fi
-
-                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
-                then
-                        echo "Failed to verify image. (sha512sum did not matched!)"
-                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
-                else
-                        echo "Verified downloaded image."
-                        hasupdates=true
-                fi
-        fi
-
-        if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
-                rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
         fi
 }
 
