@@ -22,22 +22,6 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
-scriptpath=$(dirname "$(realpath -s "$0")")
-
-pvelicense=""
-
-storagelocation=""
-snippetlocation=""
-
-networkbridge="vmbr0"
-
-vcores=4
-memory=16384
-balloonmemory=4096
-
-pool=""
-hpe=""
-
 infoBanner()
 {
    echo "Copyright (c) 2024 Daniel-Doggy"
@@ -61,6 +45,21 @@ infoBanner()
    echo "SOFTWARE."
    echo
 }
+
+scriptpath=$(dirname "$(realpath -s "$0")")
+
+pvelicense=""
+
+storagelocation=""
+snippetlocation=""
+
+networkbridge="vmbr0"
+vcores=4
+memory=16384
+balloonmemory=4096
+
+pool=""
+hpe=""
 
 while [ $# -gt 0 ]; do
   case $1 in
@@ -239,10 +238,8 @@ done
 cp -a "$scriptpath/files/Proxmox-VE/snippets/." /var/lib/vz/snippets/
 
 mkdir /custom-scripts/
-cp "$scriptpath/files/Proxmox-VE/custom-scripts/create_templates.sh" /custom-scripts/create_templates.sh
-cp "$scriptpath/files/Proxmox-VE/custom-scripts/backup_upload.sh" /custom-scripts/backup_upload.sh
-chmod 755 /custom-scripts/create_templates.sh
-chmod 755 /custom-scripts/backup_upload.sh
+cp -a "$scriptpath/files/Proxmox-VE/custom-scripts/." /custom-scripts/
+chmod -R 755 /custom-scripts/
 
 /custom-scripts/create_templates.sh --vcores "$vcores" --memory "$memory" --balloon "$balloonmemory" --network-bridge "$networkbridge" --vm-disk-location "$storagelocation" --snippets-location "$snippetlocation" --pool "$pool"
 echo "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" --quiet" >> /etc/crontab
