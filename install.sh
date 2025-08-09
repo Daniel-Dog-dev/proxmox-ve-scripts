@@ -256,5 +256,7 @@ if [ -d "/root/.config/rclone" ]; then
 		systemctl daemon-reload
 		systemctl enable "mnt-backups\\x2dremote.automount"
 		systemctl start "mnt-backups\\x2dremote.automount"
+		pvesm add dir backups-remote --path /mnt/backups-remote
+		pvesm set backups-remote --content backup
 	fi
 fi
