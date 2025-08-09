@@ -106,17 +106,17 @@ cacheDebianFiles(){
                 fi
         fi
 
+        if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
+                rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+        fi
+
+        wget -q https://cloud.debian.org/images/cloud/$1/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+
         if [ -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
                 if $verbose ; then
                         echo "Debian $1 image found in cache directory."
                         echo "Checking if cached Debian $1 is still the latest version..."
                 fi
-
-                if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
-                        rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
-                fi
-
-                wget -q https://cloud.debian.org/images/cloud/$1/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
 
                 if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
                 then
