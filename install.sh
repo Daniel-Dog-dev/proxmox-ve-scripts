@@ -253,8 +253,8 @@ if [ -d "/root/.config/rclone" ]; then
 		if [ ! -d "/mnt/pve/backups-remote" ]; then
 			mkdir /mnt/pve/backups-remote
 		fi
-		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.mount"
-		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.automount"
+		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.mount" /etc/systemd/system/
+		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.automount" /etc/systemd/system/
 		systemctl daemon-reload
 		systemctl enable "mnt-backups\\x2dremote.automount"
 		systemctl start "mnt-backups\\x2dremote.automount"
