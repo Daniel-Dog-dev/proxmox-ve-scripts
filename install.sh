@@ -2,7 +2,7 @@
 #	
 #	MIT License
 #	
-#	Copyright (c) 2024 Daniel-Dog
+#	Copyright (c) 2024 Daniel-Doggy
 #	
 #	Permission is hereby granted, free of charge, to any person obtaining a copy
 #	of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +22,9 @@
 #	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #	SOFTWARE.
 
-pvelicense=""
-
-storagelocation=""
-snippetlocation=""
-
-networkbridge="vmbr0"
-
-vcores=4
-memory=16384
-balloonmemory=4096
-
-pool=""
-
 infoBanner()
 {
-   echo "Copyright (c) 2024 Daniel-Dog"
+   echo "Copyright (c) 2024 Daniel-Doggy"
    echo ""
    echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
    echo "of this software and associated documentation files (the \"Software\"), to deal"
@@ -58,6 +45,21 @@ infoBanner()
    echo "SOFTWARE."
    echo
 }
+
+scriptpath=$(dirname "$(realpath -s "$0")")
+
+pvelicense=""
+
+storagelocation=""
+snippetlocation=""
+
+networkbridge="vmbr0"
+vcores=4
+memory=16384
+balloonmemory=4096
+
+pool=""
+hpe=""
 
 while [ $# -gt 0 ]; do
   case $1 in
@@ -81,6 +83,7 @@ while [ $# -gt 0 ]; do
 		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
 		echo "--help			Print this help page."
 		echo "--version			Print the script version."
+		echo "--hpe		Add the HPE repository. (Use \"yes\" to add HPE repo)"
    		exit 0
 	  ;;
 	--memory)
@@ -94,7 +97,7 @@ while [ $# -gt 0 ]; do
 	  ;;
 	--version)
 		infoBanner
-		echo "Version: 1.2"
+		echo "Version: 2.0"
 	  	exit 0
 	  ;;
 	--vm-disk-location)
@@ -106,6 +109,9 @@ while [ $# -gt 0 ]; do
 	--license-key)
 		pvelicense="$2"
 	  ;;
+	--hpe)
+		hpe="$2"
+
   esac
   shift
 done
@@ -151,14 +157,21 @@ then
 fi
 
 if [ "$pvelicense" == "none" ]; then
-	sed -i 's\deb \#deb \g' /etc/apt/sources.list.d/pve-enterprise.list
-	sed -i 's\deb \#deb \g' /etc/apt/sources.list.d/ceph.list
-	echo "# Proxmox VE pve-no-subscription repository provided by proxmox.com," >> /etc/apt/sources.list.d/pve-no-subscription.list
-	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/pve-no-subscription.list
-	echo "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription" >> /etc/apt/sources.list.d/pve-no-subscription.list
-	echo "# Proxmox VE CEPH pve-no-subscription repository provided by proxmox.com," >> /etc/apt/sources.list.d/ceph-no-subscription.list
-	echo "# NOT recommended for production use" >> /etc/apt/sources.list.d/ceph-no-subscription.list
-	echo "deb http://download.proxmox.com/debian/ceph-quincy bookworm no-subscription" >> /etc/apt/sources.list.d/ceph-no-subscription.list
+	echo "Enabled: false" >> /etc/apt/sources.list.d/pve-enterprise.sources
+	echo "Types: deb" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "URIs: http://download.proxmox.com/debian/pve" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "Suites: trixie" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "Components: pve-no-subscription" >> /etc/apt/sources.list.d/proxmox.sources
+	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/proxmox.sources
+
+	echo "Enabled: false" >> /etc/apt/sources.list.d/ceph.sources
+	echo "" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Types: deb" >> /etc/apt/sources.list.d/ceph.sources
+	echo "URIs: http://download.proxmox.com/debian/ceph-squid" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Suites: trixie" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Components: no-subscription" >> /etc/apt/sources.list.d/ceph.sources
+	echo "Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg" >> /etc/apt/sources.list.d/ceph.sources
+
 else
 	if [[ ! "$pvelicense" =~ \s*pve([1248])([cbsp])-([0-9a-f]){10}\s* ]];
 	then
@@ -182,20 +195,27 @@ else
 	sleep 60s
 fi
 
-apt update
-apt -y dist-upgrade
-apt install -y figlet vim fail2ban
+if [ "$hpe" == "yes" ]; then
 
-cp ./files/Proxmox-VE/jail-proxmox.local /etc/fail2ban/jail.local
-cp ./files/Proxmox-VE/proxmox.conf /etc/fail2ban/filter.d/proxmox.conf
+	curl -sS https://downloads.linux.hpe.com/SDR/hpPublicKey2048_key1.pub | gpg --dearmor | tee -a /usr/share/keyrings/hpePublicKey.gpg > /dev/null
+	curl -sS https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key1.pub | gpg --dearmor | tee -a /usr/share/keyrings/hpePublicKey.gpg > /dev/null
+	curl -sS https://downloads.linux.hpe.com/SDR/hpePublicKey2048_key2.pub | gpg --dearmor | tee -a /usr/share/keyrings/hpePublicKey.gpg > /dev/null
+
+	echo "Types: deb" >> /etc/apt/sources.list.d/hpe.sources
+	echo "URIs: https://downloads.linux.hpe.com/SDR/repo/mcp" >> /etc/apt/sources.list.d/hpe.sources
+	echo "Suites: trixie/current" >> /etc/apt/sources.list.d/hpe.sources
+	echo "Components: non-free" >> /etc/apt/sources.list.d/hpe.sources
+	echo "Signed-By: /usr/share/keyrings/hpePublicKey.gpg" >> /etc/apt/sources.list.d/hpe.sources
+	echo "Enabled: false" >> /etc/apt/sources.list.d/hpe.sources
+fi
+
+apt-get update
+apt-get -y dist-upgrade
+apt-get install -y vim fail2ban sudo
+
+cp "$scriptpath/files/Proxmox-VE/jail-proxmox.local" /etc/fail2ban/jail.local
+cp "$scriptpath/files/Proxmox-VE/proxmox.conf" /etc/fail2ban/filter.d/proxmox.conf
 systemctl restart fail2ban
-
-rm /etc/motd
-mv ./files/Standard/00-header /etc/update-motd.d/
-mv ./files/Standard/10-sysinfo /etc/update-motd.d/
-mv ./files/Standard/10-uname /etc/update-motd.d/
-mv ./files/Standard/90-footer /etc/update-motd.d/
-chmod 777 /etc/update-motd.d/*
 
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
 sed -i 's/PermitRootLogin yes/PermitRootLogin prohibit-password/g' /etc/ssh/sshd_config
@@ -203,6 +223,7 @@ sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd
 sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
 service sshd restart
 
+echo "next-id: lower=1000" >> /etc/pve/datacenter.cfg
 serverhostname=$(dig -x $(hostname -I | awk '{print $1}') +short | sed 's/\.[^.]*$//')
 echo "webauthn: rp=$serverhostname,origin=https://$serverhostname:8006,id=$serverhostname" >> /etc/pve/datacenter.cfg
 
@@ -214,14 +235,25 @@ while [ ! -d "/var/lib/vz/snippets" ]; do
     sleep 5s
 done
 
-mv ./files/Proxmox-VE/snippets/standard.yaml /var/lib/vz/snippets/standard.yaml
-mv ./files/Proxmox-VE/snippets/directadmin.yaml /var/lib/vz/snippets/directadmin.yaml
+cp -a "$scriptpath/files/Proxmox-VE/snippets/." /var/lib/vz/snippets/
 
 mkdir /custom-scripts/
-mv ./files/Proxmox-VE/custom-scripts/create_templates.sh /custom-scripts/create_templates.sh
-mv ./files/Proxmox-VE/custom-scripts/backup_upload.sh /custom-scripts/backup_upload.sh
-chmod 755 /custom-scripts/create_templates.sh
-chmod 755 /custom-scripts/backup_upload.sh
+cp -a "$scriptpath/files/Proxmox-VE/custom-scripts/." /custom-scripts/
+chmod -R 755 /custom-scripts/
 
 /custom-scripts/create_templates.sh --vcores "$vcores" --memory "$memory" --balloon "$balloonmemory" --network-bridge "$networkbridge" --vm-disk-location "$storagelocation" --snippets-location "$snippetlocation" --pool "$pool"
-echo "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" -quiet" >> /etc/crontab
+echo "0 5    * * *   root    /custom-scripts/create_templates.sh --vcores \"$vcores\" --memory \"$memory\" --balloon \"$balloonmemory\" --network-bridge \"$networkbridge\" --vm-disk-location \"$storagelocation\" --snippets-location \"$snippetlocation\" --pool \"$pool\" --quiet" >> /etc/crontab
+
+if [ -d "/root/.config/rclone" ]; then
+	if [ -f "/root/.config/rclone/rclone.conf" ]; then
+		apt-get install rclone
+		ln -s /usr/bin/rclone /sbin/mount.rclone
+		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.mount" /etc/systemd/system/
+		cp "$scriptpath/files/Proxmox-VE/mnt-backups\\x2dremote.automount" /etc/systemd/system/
+		systemctl daemon-reload
+		systemctl enable "mnt-backups\\x2dremote.automount"
+		systemctl start "mnt-backups\\x2dremote.automount"
+		pvesm add dir backups-remote --path /mnt/backups-remote
+		pvesm set backups-remote --content backup
+	fi
+fi

@@ -2,7 +2,7 @@
 #	
 #	MIT License
 #	
-#	Copyright (c) 2024 Daniel-Dog
+#	Copyright (c) 2024 Daniel-Doggy
 #	
 #	Permission is hereby granted, free of charge, to any person obtaining a copy
 #	of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,15 @@
 #	SOFTWARE.
 
 if [ "$(id -u)" != 0 ]; then
-	echo "This script requires root privileges."
-	exit 1
+	 echo "This script requires root privileges."
+	 exit 1
 fi
 
 scriptpath=$(dirname "$(realpath -s "$0")")
 
 forceupdate=false
 verbose=true
+hasupdates=false
 
 storagelocation=""
 snippetlocation=""
@@ -44,42 +45,46 @@ balloonmemory=4096
 pool=""
 
 createTemplate() {
-	
+
+        if [ ! -f "$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2" ]; then
+                if [ $verbose ] || [ $hasupdates ] ; then
+                        echo "Image file for $3 does not exist!"
+                fi
+                return
+        fi
+
 	pvesh get /cluster/resources --type vm --output-format yaml | grep -E -i 'vmid' > "$scriptpath"/cache/vmidcheck.txt
-	
+
 	if grep -q "vmid: $1" "$scriptpath/cache/vmidcheck.txt" ; then
-	
-		if $forceupdate ; then
-		
-			if $verbose ; then
+		if [ $forceupdate ] || [ $hasupdates ] ; then
+			if [ $verbose ] || [ $hasupdates ] ; then
 				echo "Force update is set. Removing VM ID $1..."
 			fi
-			
+
 			qm destroy "$1" -purge
 			rm "$scriptpath"/cache/vmidcheck.txt
 		else
-		
-			if $verbose ; then
+			if [ $verbose ] || [ $hasupdates ] ; then
 				echo "VMID $1 already exists. Skipping..."
 			fi
-			
+
 			rm "$scriptpath"/cache/vmidcheck.txt
 			return
 		fi
 	fi
 
-	qm create "$1" --name "$2" --ostype l26
+	qm create "$1" --name "$3" --ostype l26
 	qm set "$1" --net0 virtio,bridge="$networkbridge"
 	qm set "$1" --serial0 socket --vga serial0
 	qm set "$1" --memory "$memory" --cores "$vcores" --cpu host
 	qm set "$1" --balloon "$balloonmemory"
-	qm set "$1" --scsi0 "$storagelocation":0,import-from="$scriptpath/cache/debian-12-generic-amd64.qcow2",discard=on,ssd=1
+	qm set "$1" --scsi0 "$storagelocation":0,import-from="$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2",discard=on,ssd=1
 	qm set "$1" --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set "$1" --onboot 1
 	qm set "$1" --agent enabled=1,fstrim_cloned_disks=1
 	qm set "$1" --ide2 "$storagelocation":cloudinit
 	qm set "$1" --ipconfig0 ip=dhcp,ip6=dhcp
-	qm set "$1" --cicustom "user=$snippetlocation:snippets/$3"
+	qm set "$1" --cicustom "user=$snippetlocation:snippets/$4"
 	qm disk resize "$1" scsi0 50G
 	qm template "$1"
 	if [ -n "$pool" ];
@@ -88,9 +93,75 @@ createTemplate() {
 	fi
 }
 
+cacheDebianFiles(){
+        if [ ! -d "$scriptpath/cache" ]; then
+                if $verbose ; then
+                        echo "No cache directory found. Creating cache directory."
+                fi
+
+                mkdir "$scriptpath"/cache/
+
+                if $verbose ; then
+                        echo "Created cache directory."
+                fi
+        fi
+
+        if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
+                rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+        fi
+
+        wget -q https://cloud.debian.org/images/cloud/$1/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+
+        if [ -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
+                if $verbose ; then
+                        echo "Debian $1 image found in cache directory."
+                        echo "Checking if cached Debian $1 is still the latest version..."
+                fi
+
+                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                then
+                        if $verbose ; then
+                                echo "The cached Debian $1 image seems to be old. Removing old cached Debian $1 image."
+                        fi
+
+                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+
+                        if $verbose ; then
+                                echo "Removed old cached Debian $1 image."
+                        fi
+                else
+                        if $verbose ; then
+                                echo "The cached Debian $1 image seems to be up-to-date. Skipping new image download."
+                        fi
+                fi
+        fi
+
+        if [ ! -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
+                if $verbose ; then
+                        echo "Downloading lastest Debian $2 $1 image."
+                fi
+
+                wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-$2-genericcloud-amd64.qcow2" -O "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+
+                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                then
+                        if $verbose ; then
+                                echo "Failed to download Debian $2 $1 image. (sha512sum did not match)"
+                        fi
+
+                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+                else
+                        if $verbose ; then
+                                echo "Downloaded lastest Debian $2 $1 image."
+                        fi
+                        hasupdates=true
+                fi
+        fi
+}
+
 infoBanner()
 {
-   echo "Copyright (c) 2024 Daniel-Dog"
+   echo "Copyright (c) 2024 Daniel-Doggy"
    echo ""
    echo "Permission is hereby granted, free of charge, to any person obtaining a copy"
    echo "of this software and associated documentation files (the \"Software\"), to deal"
@@ -114,150 +185,106 @@ infoBanner()
 
 while [ $# -gt 0 ]; do
   case $1 in
-	--balloon)
-		balloonmemory="$2"
-	  ;;
-	--vcores)
-		vcores="$2"
-	  ;;
-	--help)
-		infoBanner
-		echo "Syntax: create_template.sh --[options]"
-   		echo "options:"
-		echo "--vcores			Specify the vcores assigned to the template VM. (Default: 4)"
-		echo "--memory			Specify the memory amount for the VM. (In MiB) (Default: 16384)"
-		echo "--balloon			Specify the minimum balloon memory. (in MiB) (Default: 4096)"
-		echo "--network-bridge		Specify the network bridge name for the VM network card. (Default: vmbr0)"
-		echo "--vm-disk-location	Specify the template storage name for the VM disks and Cloud-Init disks. (Required) (Use \"auto\" for auto detect)"
-		echo "--snippets-location	Specify the snippets storage name for the Cloud-Init configuration files. (Required)"
-		echo "--pool			Specify the pool name that the VM should be in. (Default: none)"
-   		echo "--help			Print this help page."
-		echo "--version			Print the script version."
-   		echo "--force			Force template update even if there is no image change."
-  		echo "--quiet			Run script quietly."
-		exit 0
-	  ;;
-	--memory)
-		memory="$2"
-	  ;;
-	--network-bridge)
-		networkbridge="$2"
-	  ;;
-	--pool)
-		pool="$2"
-	  ;;
-	--version)
-		infoBanner
-		echo "Version: 1.5"
-	  	exit 0
-	  ;;
-	--vm-disk-location)
-	  	storagelocation="$2"
-	  ;;
-	--snippets-location)
-		snippetlocation="$2"
-	  ;;
-	--force)
-	  	forceupdate=true
-	  ;;
-	--quiet)
-	  	verbose=false
-	  ;;
+        --balloon)
+                balloonmemory="$2"
+          ;;
+        --vcores)
+                vcores="$2"
+          ;;
+        --help)
+                infoBanner
+                echo "Syntax: create_template.sh --[options]"
+                echo "options:"
+                echo "--vcores                  Specify the vcores assigned to the template VM. (Default: 4)"
+                echo "--memory                  Specify the memory amount for the VM. (In MiB) (Default: 16384)"
+                echo "--balloon                 Specify the minimum balloon memory. (in MiB) (Default: 4096)"
+                echo "--network-bridge          Specify the network bridge name for the VM network card. (Default: vmbr0)"
+                echo "--vm-disk-location        Specify the template storage name for the VM disks and Cloud-Init disks. (Required) (Use \"auto\" for auto detect)"
+                echo "--snippets-location       Specify the snippets storage name for the Cloud-Init configuration files. (Required)"
+                echo "--pool                    Specify the pool name that the VM should be in. (Default: none)"
+                echo "--help                    Print this help page."
+                echo "--version                 Print the script version."
+                echo "--force                   Force template update even if there is no image change."
+                echo "--quiet                   Run script quietly."
+                exit 0
+          ;;
+        --memory)
+                memory="$2"
+          ;;
+        --network-bridge)
+                networkbridge="$2"
+          ;;
+        --pool)
+                pool="$2"
+          ;;
+        --version)
+                infoBanner
+                echo "Version: 1.5"
+                exit 0
+          ;;
+        --vm-disk-location)
+                storagelocation="$2"
+          ;;
+        --snippets-location)
+                snippetlocation="$2"
+          ;;
+        --force)
+                forceupdate=true
+          ;;
+        --quiet)
+                verbose=false
+          ;;
   esac
   shift
 done
 
 if [ -z "$snippetlocation" ]; then
-	echo "No Snippets location provided."
-	echo "Use: create_templates.sh --snippets-location <location>"
-	exit 1
+        echo "No Snippets location provided."
+        echo "Use: create_templates.sh --snippets-location <location>"
+        exit 1
 fi
 
 if [ -z "${storagelocation}" ]; then
-	echo "No storage location provided."
-	echo "Use: create_templates.sh --vm-disk-location <location>"
-	exit 1
+        echo "No storage location provided."
+        echo "Use: create_templates.sh --vm-disk-location <location>"
+        exit 1
 fi
 
 if [ "$storagelocation" == "auto" ];
 then
-	if [ "$(pvesm scan zfs)" != "" ]; then
-        	storagelocation="local-zfs"
-	fi
+        if [ "$(pvesm scan zfs)" != "" ]; then
+                storagelocation="local-zfs"
+        fi
 
-	if [ "$(pvesm scan lvm)" != "" ]; then
-        	storagelocation="local-lvm"
-	fi
+        if [ "$(pvesm scan lvm)" != "" ]; then
+                storagelocation="local-lvm"
+        fi
 
-	if [ -z "$storagelocation" ]; then
-		echo "Failed to detect a storage location."
-		echo "Please rerun the create_templates script and specify the storage location."
-		echo "create_templates.sh --vm-disk-location <storage location>"
-		exit 1
-	fi
+        if [ -z "$storagelocation" ]; then
+                echo "Failed to detect a storage location."
+                echo "Please rerun the create_templates script and specify the storage location."
+                echo "create_templates.sh --vm-disk-location <storage location>"
+                exit 1
+        fi
 fi
 
 if [ -f "/var/lock/vm-template-update.lck" ]; then
-	echo "Template update script is already running in a different instance. Exiting..."
-	exit 1
+        echo "Template update script is already running in a different instance. Exiting..."
+        exit 1
 fi
 
 echo "PID: $$" > /var/lock/vm-template-update.lck
 
-if [ ! -d "$scriptpath/cache" ]; then
-	if $verbose ; then
-		echo "No cache directory found. Creating cache directory."
-	fi
+cacheDebianFiles "trixie" 13
+cacheDebianFiles "bookworm" 12
 
-	mkdir "$scriptpath"/cache/
+createTemplate 900 "bookworm" "Debian-bookworm-template" standard.yaml
+createTemplate 901 "bookworm" "Debian-bookworm-DirectAdmin-template" directadmin.yaml
+createTemplate 902 "bookworm" "Debian-bookworm-Desktop" debian-desktop.yaml
 
-	if $verbose ; then
-		echo "Created cache directory."
-	fi
-fi
+createTemplate 910 "trixie" "Debian-trixie-template" standard.yaml
+createTemplate 911 "trixie" "Debian-trixie-DirectAdmin-template" directadmin.yaml
+createTemplate 912 "trixie" "Debian-trixie-Desktop" debian-desktop.yaml
+createTemplate 913 "trixie" "Debian-trixie-Keycloak" keycloak.yaml
 
-if [ -f "$scriptpath/cache/debian-12-generic-amd64.qcow2" ]; then
-	if $verbose ; then
-		echo "Debian Bookworm image found in cache directory."
-		echo "Checking if cached Debian Bookworm is still the latest version..."
-	fi
-	
-	wget -q https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
-	
-	if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-12-generic-amd64.qcow2 | awk '{print $1}')  debian-12-generic-amd64.qcow2" "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
-	then
-		if $verbose ; then
-			echo "The cached Debian Bookworm image seems to be old. Removing old cached Debian Bookworm image."
-		fi
-		
-		rm "$scriptpath"/cache/debian-12-generic-amd64.qcow2
-
-		if $verbose ; then
-			echo "Removed old cached Debian Bookworm image."
-		fi
-	else
-		if $verbose ; then
-			echo "The cached Debian Bookworm image seems to be up-to-date. Skipping new image download."
-		fi
-	fi
-fi
-
-if [ ! -f "$scriptpath/cache/debian-12-generic-amd64.qcow2" ]; then
-	if $verbose ; then
-		echo "Downloading lastest Debian Bookworm image."
-	fi
-	
-	wget -q "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2" -O "$scriptpath"/cache/debian-12-generic-amd64.qcow2
-
-	if $verbose ; then
-		echo "Downloaded lastest Debian Bookworm image."
-	fi
-fi
-
-createTemplate 900 "Debian-Bookworm-template" standard.yaml
-createTemplate 901 "Debian-Bookworm-DirectAdmin-template" directadmin.yaml
-
-if [ -f "$scriptpath/cache/Debian-Bookworm-SHA512-sums.txt" ]; then
-	rm "$scriptpath"/cache/Debian-Bookworm-SHA512-sums.txt
-fi
 rm /var/lock/vm-template-update.lck

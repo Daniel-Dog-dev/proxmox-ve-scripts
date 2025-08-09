@@ -28,11 +28,13 @@ timezone: Europe/Berlin
 
 users:
   - name: admin
+    plain_text_passwd: 'admin'
+    lock_passwd: False
     ssh_authorized_keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ25G6ZCfNQh2PxOhrQIanl67ZAAA9evhuAHGDDkGedG Yubico Yubikey - Primary
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGI91xEYJ+z75R9rjc1ju4t2+4rJLy7eWkw61eQ7Xblp Yubico Yubikey - Secondary
-    sudo:  ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
+    groups: sudo
 
 package_update: true
 package_upgrade: true
@@ -41,13 +43,17 @@ packages:
   - qemu-guest-agent
   - git
   - fail2ban
+  - gnome-core
+  - spice-vdagent
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
+  - systemctl enable --now gdm3
   - git clone https://github.com/Daniel-Dog-dev/proxmox-ve-scripts.git
   - cd proxmox-ve-scripts/
   - mv ./files/Standard/jail-standard.local /etc/fail2ban/jail.local
   - systemctl restart fail2ban
+  - passwd -e admin
   - cd ../
   - rm -r proxmox-ve-scripts/
   - touch /etc/cloud/cloud-init.disabled
