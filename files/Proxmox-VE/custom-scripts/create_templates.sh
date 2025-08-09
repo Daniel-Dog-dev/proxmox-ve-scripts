@@ -112,6 +112,10 @@ cacheDebianFiles(){
                         echo "Checking if cached Debian $1 is still the latest version..."
                 fi
 
+                if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
+                        rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                fi
+
                 wget -q https://cloud.debian.org/images/cloud/$1/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
 
                 if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
@@ -130,10 +134,6 @@ cacheDebianFiles(){
                                 echo "The cached Debian $1 image seems to be up-to-date. Skipping new image download."
                         fi
                 fi
-
-                if [ -f "$scriptpath/cache/Debian-$1-SHA512-sums.txt" ]; then
-                        rm "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
-                fi
         fi
 
         if [ ! -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
@@ -142,10 +142,19 @@ cacheDebianFiles(){
                 fi
 
                 wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-$2-genericcloud-amd64.qcow2" -O "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
-                hasupdates=true
 
-                if $verbose ; then
-                        echo "Downloaded lastest Debian $2 $1 image."
+                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                then
+                        if $verbose ; then
+                                echo "Failed to download Debian $2 $1 image. (sha512sum did not match)"
+                        fi
+
+                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+                else
+                        if $verbose ; then
+                                echo "Downloaded lastest Debian $2 $1 image."
+                        fi
+                        hasupdates=true
                 fi
         fi
 }
