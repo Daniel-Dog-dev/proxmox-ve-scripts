@@ -31,6 +31,7 @@ scriptpath=$(dirname "$(realpath -s "$0")")
 
 forceupdate=false
 verbose=true
+hasupdates=false
 
 storagelocation=""
 snippetlocation=""
@@ -46,8 +47,8 @@ pool=""
 createTemplate() {
 
         if [ ! -f "$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2" ]; then
-                if $verbose ; then
-                        echo "Image file for $3 does not exists!"
+                if [ $verbose ] || [ $hasupdates ] ; then
+                        echo "Image file for $3 does not exist!"
                 fi
                 return
         fi
@@ -55,15 +56,15 @@ createTemplate() {
 	pvesh get /cluster/resources --type vm --output-format yaml | grep -E -i 'vmid' > "$scriptpath"/cache/vmidcheck.txt
 
 	if grep -q "vmid: $1" "$scriptpath/cache/vmidcheck.txt" ; then
-		if $forceupdate ; then
-			if $verbose ; then
+		if [ $forceupdate ] || [ $hasupdates ] ; then
+			if [ $verbose ] || [ $hasupdates ] ; then
 				echo "Force update is set. Removing VM ID $1..."
 			fi
 
 			qm destroy "$1" -purge
 			rm "$scriptpath"/cache/vmidcheck.txt
 		else
-			if $verbose ; then
+			if [ $verbose ] || [ $hasupdates ] ; then
 				echo "VMID $1 already exists. Skipping..."
 			fi
 
@@ -149,6 +150,7 @@ cacheDebianFiles(){
                         rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
                 else
                         echo "Verified downloaded image."
+                        hasupdates=true
                 fi
         fi
 
