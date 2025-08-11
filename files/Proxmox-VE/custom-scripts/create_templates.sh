@@ -58,9 +58,9 @@ createTemplate() {
 			if ! $hasupdates ; then
 				if $verbose ; then
 					echo "No updates needed."
-					rm "$scriptpath"/cache/vmidcheck.txt
-					return
 				fi
+                                rm "$scriptpath"/cache/vmidcheck.txt
+				return
 			else
 				echo "Has updates is set. Updating template for VM ID $1"
 			fi
