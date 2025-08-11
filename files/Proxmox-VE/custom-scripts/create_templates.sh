@@ -46,32 +46,31 @@ pool=""
 
 createTemplate() {
 
-        if [ ! -f "$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2" ]; then
-                if [ $verbose ] || [ $hasupdates ] ; then
-                        echo "Image file for $3 does not exist!"
-                fi
-                return
-        fi
+	if [ ! -f "$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2" ]; then
+		echo "Image file for $3 does not exist! Skipping VM ID $1"
+		return
+	fi
 
 	pvesh get /cluster/resources --type vm --output-format yaml | grep -E -i 'vmid' > "$scriptpath"/cache/vmidcheck.txt
 
 	if grep -q "vmid: $1" "$scriptpath/cache/vmidcheck.txt" ; then
-		if [ $forceupdate ] || [ $hasupdates ] ; then
-			if [ $verbose ] || [ $hasupdates ] ; then
-				echo "Force update is set. Removing VM ID $1..."
+		if ! $forceupdate ; then
+			if ! $hasupdates ; then
+				if $verbose ; then
+					echo "No updates needed."
+					rm "$scriptpath"/cache/vmidcheck.txt
+					return
+				fi
+			else
+				echo "Has updates is set. Updating template for VM ID $1"
 			fi
-
-			qm destroy "$1" -purge
-			rm "$scriptpath"/cache/vmidcheck.txt
 		else
-			if [ $verbose ] || [ $hasupdates ] ; then
-				echo "VMID $1 already exists. Skipping..."
-			fi
-
-			rm "$scriptpath"/cache/vmidcheck.txt
-			return
+			echo "Force updates is set. Updating template for VM ID $1"
 		fi
 	fi
+
+	qm destroy "$1" -purge
+	rm "$scriptpath"/cache/vmidcheck.txt
 
 	qm create "$1" --name "$3" --ostype l26
 	qm set "$1" --net0 virtio,bridge="$networkbridge"
