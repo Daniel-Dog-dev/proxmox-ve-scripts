@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo "Triggered" >> /root/triggered.txt
 # Get the hostname and domain name for NS records.
 serverip=""
 retries=0
