@@ -14,5 +14,5 @@ domainhostname=$(echo $serverhostname | sed 's/^[^.]*.//g')
 ns1host="ns1.${domainhostname}"
 ns2host="ns2.${domainhostname}"
 
-echo "IP: ${serverip}" >> test.txt
-echo "domain: ${domainhostname}" >> test.txt
+echo "IP: ${serverip}" >> /root/test.txt
+echo "domain: ${domainhostname}" >> /root/test.txt
