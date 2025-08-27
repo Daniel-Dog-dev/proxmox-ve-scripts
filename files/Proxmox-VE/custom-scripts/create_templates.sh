@@ -46,39 +46,38 @@ pool=""
 
 createTemplate() {
 
-        if [ ! -f "$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2" ]; then
-                if [ $verbose ] || [ $hasupdates ] ; then
-                        echo "Image file for $3 does not exist!"
-                fi
-                return
-        fi
+	if [ ! -f "$scriptpath/cache/debian-$2-generic-amd64.qcow2" ]; then
+		echo "Image file for $3 does not exist! Skipping VM ID $1"
+		return
+	fi
 
 	pvesh get /cluster/resources --type vm --output-format yaml | grep -E -i 'vmid' > "$scriptpath"/cache/vmidcheck.txt
 
 	if grep -q "vmid: $1" "$scriptpath/cache/vmidcheck.txt" ; then
-		if [ $forceupdate ] || [ $hasupdates ] ; then
-			if [ $verbose ] || [ $hasupdates ] ; then
-				echo "Force update is set. Removing VM ID $1..."
+		if ! $forceupdate ; then
+			if ! $hasupdates ; then
+				if $verbose ; then
+					echo "No updates needed."
+				fi
+                                rm "$scriptpath"/cache/vmidcheck.txt
+				return
+			else
+				echo "Has updates is set. Updating template for VM ID $1"
 			fi
-
-			qm destroy "$1" -purge
-			rm "$scriptpath"/cache/vmidcheck.txt
 		else
-			if [ $verbose ] || [ $hasupdates ] ; then
-				echo "VMID $1 already exists. Skipping..."
-			fi
-
-			rm "$scriptpath"/cache/vmidcheck.txt
-			return
+			echo "Force updates is set. Updating template for VM ID $1"
 		fi
 	fi
+
+	qm destroy "$1" -purge
+	rm "$scriptpath"/cache/vmidcheck.txt
 
 	qm create "$1" --name "$3" --ostype l26
 	qm set "$1" --net0 virtio,bridge="$networkbridge"
 	qm set "$1" --serial0 socket --vga serial0
 	qm set "$1" --memory "$memory" --cores "$vcores" --cpu host
 	qm set "$1" --balloon "$balloonmemory"
-	qm set "$1" --scsi0 "$storagelocation":0,import-from="$scriptpath/cache/debian-$2-genericcloud-amd64.qcow2",discard=on,ssd=1
+	qm set "$1" --scsi0 "$storagelocation":0,import-from="$scriptpath/cache/debian-$2-generic-amd64.qcow2",discard=on,ssd=1
 	qm set "$1" --boot order=scsi0 --scsihw virtio-scsi-single
 	qm set "$1" --onboot 1
 	qm set "$1" --agent enabled=1,fstrim_cloned_disks=1
@@ -112,19 +111,19 @@ cacheDebianFiles(){
 
         wget -q https://cloud.debian.org/images/cloud/$1/latest/SHA512SUMS -O "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
 
-        if [ -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
+        if [ -f "$scriptpath/cache/debian-$1-generic-amd64.qcow2" ]; then
                 if $verbose ; then
                         echo "Debian $1 image found in cache directory."
                         echo "Checking if cached Debian $1 is still the latest version..."
                 fi
 
-                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-generic-amd64.qcow2 | awk '{print $1}')  debian-$2-generic-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
                 then
                         if $verbose ; then
                                 echo "The cached Debian $1 image seems to be old. Removing old cached Debian $1 image."
                         fi
 
-                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+                        rm "$scriptpath"/cache/debian-$1-generic-amd64.qcow2
 
                         if $verbose ; then
                                 echo "Removed old cached Debian $1 image."
@@ -136,20 +135,20 @@ cacheDebianFiles(){
                 fi
         fi
 
-        if [ ! -f "$scriptpath/cache/debian-$1-genericcloud-amd64.qcow2" ]; then
+        if [ ! -f "$scriptpath/cache/debian-$1-generic-amd64.qcow2" ]; then
                 if $verbose ; then
                         echo "Downloading lastest Debian $2 $1 image."
                 fi
 
-                wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-$2-genericcloud-amd64.qcow2" -O "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+                wget -q "https://cloud.debian.org/images/cloud/$1/latest/debian-$2-generic-amd64.qcow2" -O "$scriptpath"/cache/debian-$1-generic-amd64.qcow2
 
-                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2 | awk '{print $1}')  debian-$2-genericcloud-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
+                if ! grep -Fxq "$(sha512sum "$scriptpath"/cache/debian-$1-generic-amd64.qcow2 | awk '{print $1}')  debian-$2-generic-amd64.qcow2" "$scriptpath"/cache/Debian-$1-SHA512-sums.txt
                 then
                         if $verbose ; then
                                 echo "Failed to download Debian $2 $1 image. (sha512sum did not match)"
                         fi
 
-                        rm "$scriptpath"/cache/debian-$1-genericcloud-amd64.qcow2
+                        rm "$scriptpath"/cache/debian-$1-generic-amd64.qcow2
                 else
                         if $verbose ; then
                                 echo "Downloaded lastest Debian $2 $1 image."
