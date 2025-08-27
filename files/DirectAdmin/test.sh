@@ -4,7 +4,7 @@ echo "Triggered" >> /root/triggered.txt
 # Get the hostname and domain name for NS records.
 serverip=""
 retries=0
-while [[ $(hostname -I | awk '{print $1}') = "" ]] && [ ! $retries -gt 6 ];; do
+while [[ $(hostname -I | awk '{print $1}') = "" ]] && [[ ! $retries -gt 6 ]]; do
 		echo "Triggered" >> /root/triggered-$retries.txt
 		let "retries++"
 		sleep 5s
