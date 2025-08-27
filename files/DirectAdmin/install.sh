@@ -53,7 +53,13 @@ if [ -z "${directadmin_setup_headless_email}" ]
 fi
 
 # Get the hostname and domain name for NS records.
-serverip=$(hostname -I | awk '{print $1}')
+serverip=""
+retries=0
+while [[ $(hostname -I | awk '{print $1}') = "" ]] && [[ ! $retries -gt 6 ]]; do
+		let "retries++"
+		sleep 10s
+done
+
 serverhostname=$(dig -x $serverip +short | sed 's/\.[^.]*$//')
 domainhostname=$(echo $serverhostname | sed 's/^[^.]*.//g')
 ns1host="ns1.${domainhostname}"
