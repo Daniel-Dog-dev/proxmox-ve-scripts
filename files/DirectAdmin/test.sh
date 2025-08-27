@@ -5,9 +5,10 @@ echo "Triggered" >> /root/triggered.txt
 serverip=""
 retries=0
 while [[ $(hostname -I | awk '{print $1}') =~ "" ]] && [ ! $retries -gt 6 ];; do
+		echo "Triggered" >> /root/triggered-$retries.txt
 		let "retries++"
-		sleep 20s
-done
+		sleep 5s
+donew
 
 serverip=$(hostname -I | awk '{print $1}')
 serverhostname=$(dig -x $serverip +short | sed 's/\.[^.]*$//')
