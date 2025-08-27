@@ -55,9 +55,9 @@ fi
 # Get the hostname and domain name for NS records.
 serverip=""
 retries=0
-while [[ $(hostname -I | awk '{print $1}') =~ "" ]] && [ ! $retries -gt 6 ];; do
+while [[ $(hostname -I | awk '{print $1}') = "" ]] && [[ ! $retries -gt 6 ]]; do
 		let "retries++"
-		sleep 20s
+		sleep 10s
 done
 
 serverhostname=$(dig -x $serverip +short | sed 's/\.[^.]*$//')
