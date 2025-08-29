@@ -37,14 +37,7 @@ users:
 package_update: true
 package_upgrade: true
 package_reboot_if_required: true
-packages:
-  - qemu-guest-agent
-  - git
-  - curl
-  - dnsutils
-  - rclone
-  - zip
-  - unzip
+packages: ['qemu-guest-agent', 'git', 'curl', 'dnsutils', 'rclone', 'zip', 'unzip']
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
