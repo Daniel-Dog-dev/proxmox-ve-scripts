@@ -78,6 +78,11 @@ then
 	exit 1
 fi
 
+echo "Domain: ${domainhostname}"
+echo "Hostname: ${serverhostname}"
+echo "NS servers: ${ns1host}, ${ns2host}"
+sleep 30s
+
 # Set variables to let DirectAdmin install correctly.
 if [ -z "${directadmin_setup_admin_username}" ] || [ "${#directadmin_setup_admin_username}" -gt 10 ]
 then
