@@ -73,10 +73,6 @@ domainhostname=$(echo $serverhostname | sed 's/^[^.]*.//g')
 ns1host="ns1.${domainhostname}"
 ns2host="ns2.${domainhostname}"
 
-echo "Hostname: ${serverhostname}" > /dev/ttyS0
-echo "Domain: ${domainhostname}" > /dev/ttyS0
-echo "NS servers: ${ns1host}, ${ns2host}" > /dev/ttyS0
-
 if [[ $serverip == "" ]] || [[ $serverhostname == "" ]];
 then
 	exit 1
