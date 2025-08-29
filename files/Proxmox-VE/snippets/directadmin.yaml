@@ -57,5 +57,5 @@ runcmd:
   - echo 'directadmin_setup_headless_email=""' >> ./files/DirectAdmin/config.cnf
   - ./files/DirectAdmin/install.sh
   - cd ../
-  - rm -r proxmox-ve-scripts/
+#  - rm -r proxmox-ve-scripts/
   - touch /etc/cloud/cloud-init.disabled
