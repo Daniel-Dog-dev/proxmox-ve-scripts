@@ -78,8 +78,6 @@ then
 	exit 1
 fi
 
-sleep 60
-
 # Set variables to let DirectAdmin install correctly.
 if [ -z "${directadmin_setup_admin_username}" ] || [ "${#directadmin_setup_admin_username}" -gt 10 ]
 then
