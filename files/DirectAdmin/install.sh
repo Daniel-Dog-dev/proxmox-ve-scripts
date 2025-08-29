@@ -78,11 +78,6 @@ then
 	exit 1
 fi
 
-echo "Domain: ${domainhostname}"
-echo "Hostname: ${serverhostname}"
-echo "NS servers: ${ns1host}, ${ns2host}"
-sleep 30s
-
 # Set variables to let DirectAdmin install correctly.
 if [ -z "${directadmin_setup_admin_username}" ] || [ "${#directadmin_setup_admin_username}" -gt 10 ]
 then
@@ -99,6 +94,11 @@ export mysql=8.4
 export php1_release=8.4
 export php2_release=8.3
 export php1_mode=php-fpm
+
+echo "Domain: ${domainhostname}" > /dev/ttyS0
+echo "Hostname: ${serverhostname}" > /dev/ttyS0
+echo "NS servers: ${ns1host}, ${ns2host}" > /dev/ttyS0
+sleep 30s
 
 # Download and install DirectAdmin.
 wget -O "${installdir}/directadmin.sh" https://download.directadmin.com/setup.sh
