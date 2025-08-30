@@ -54,21 +54,34 @@ fi
 
 # Get the hostname and domain name for NS records.
 serverip=""
+serverhostname=""
 retries=0
-while [[ $(hostname -I | awk '{print $1}') = "" ]] && [[ ! $retries -gt 6 ]]; do
-		let "retries++"
-		sleep 10s
+while [[ $serverip == "" ]] && [[ ! $retries -gt 6 ]]; do
+	serverip=$(hostname -I | awk '{print $1}')
+	let "retries++"
+	sleep 10s
 done
 
-serverhostname=$(dig -x $serverip +short | sed 's/\.[^.]*$//')
+retries=0
+while [[ $serverhostname == "" ]] && [[ ! $retries -gt 6 ]] && [[ ! $serverip == "" ]]; do
+	serverhostname=$(dig -x $serverip +short | sed 's/\.[^.]*$//')
+	let "retries++"
+	sleep 10s
+done
+
 domainhostname=$(echo $serverhostname | sed 's/^[^.]*.//g')
 ns1host="ns1.${domainhostname}"
 ns2host="ns2.${domainhostname}"
 
+if [[ $serverip == "" ]] || [[ $serverhostname == "" ]];
+then
+	exit 1
+fi
+
 # Set variables to let DirectAdmin install correctly.
 if [ -z "${directadmin_setup_admin_username}" ] || [ "${#directadmin_setup_admin_username}" -gt 10 ]
-	then
-		directadmin_setup_admin_username="admin"
+then
+	directadmin_setup_admin_username="admin"
 fi
 export DA_ADMIN_USER=$directadmin_setup_admin_username
 export DA_HOSTNAME=$serverhostname
